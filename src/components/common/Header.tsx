@@ -1,7 +1,7 @@
 // src/components/common/Header.tsx
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, Menu } from "lucide-react";
@@ -15,6 +15,12 @@ type Props = {
 
 const Header = ({ showBackButton = false, onBackClick, title }: Props) => {
   const { totalItems } = useAppSelector((state) => state.cart);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure hydration consistency
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <header
@@ -68,7 +74,8 @@ const Header = ({ showBackButton = false, onBackClick, title }: Props) => {
         <div className="flex items-center space-x-4">
           <Link href="/cart" className="relative">
             <ShoppingBag size={24} style={{ color: "#7f6957" }} />
-            {totalItems > 0 && (
+            {/* Only render badge after client hydration and when there are items */}
+            {isClient && totalItems > 0 && (
               <span
                 className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-xs text-white flex items-center justify-center font-bold"
                 style={{ backgroundColor: "#7f6957" }}

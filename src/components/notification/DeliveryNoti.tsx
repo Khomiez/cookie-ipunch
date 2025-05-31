@@ -5,7 +5,7 @@ type Props = {};
 
 const DeliveryNoti = (props: Props) => {
   return (
-    <div className="mx-4 mb-4">
+    <div className="mx-4 mb-4 mt-1">
       <div
         className="max-w-md mx-auto p-3 rounded-2xl flex items-center space-x-3"
         style={{ backgroundColor: "#eaf7ff" }}

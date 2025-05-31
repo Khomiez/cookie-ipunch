@@ -10,12 +10,14 @@ interface CartState {
   items: CartItem[];
   totalItems: number;
   totalPrice: number;
+  isHydrated: boolean;
 }
 
 const initialState: CartState = {
   items: [],
   totalItems: 0,
   totalPrice: 0,
+  isHydrated: false,
 };
 
 // Load cart from localStorage
@@ -24,7 +26,11 @@ const loadCartFromStorage = (): CartState => {
     try {
       const savedCart = localStorage.getItem('fatsprinkle_cart');
       if (savedCart) {
-        return JSON.parse(savedCart);
+        const parsedCart = JSON.parse(savedCart);
+        return {
+          ...parsedCart,
+          isHydrated: true,
+        };
       }
     } catch (error) {
       console.error('Error loading cart from localStorage:', error);
@@ -37,7 +43,9 @@ const loadCartFromStorage = (): CartState => {
 const saveCartToStorage = (state: CartState) => {
   if (typeof window !== 'undefined') {
     try {
-      localStorage.setItem('fatsprinkle_cart', JSON.stringify(state));
+      // Don't save the isHydrated flag to localStorage
+      const { isHydrated, ...cartToSave } = state;
+      localStorage.setItem('fatsprinkle_cart', JSON.stringify(cartToSave));
     } catch (error) {
       console.error('Error saving cart to localStorage:', error);
     }
@@ -53,8 +61,19 @@ const calculateTotals = (items: CartItem[]): { totalItems: number; totalPrice: n
 
 const cartSlice = createSlice({
   name: 'cart',
-  initialState: loadCartFromStorage(),
+  initialState,
   reducers: {
+    // Initialize cart from localStorage (called after hydration)
+    initializeCart: (state) => {
+      if (typeof window !== 'undefined') {
+        const savedState = loadCartFromStorage();
+        state.items = savedState.items;
+        state.totalItems = savedState.totalItems;
+        state.totalPrice = savedState.totalPrice;
+        state.isHydrated = true;
+      }
+    },
+
     addToCart: (state, action: PayloadAction<IProduct>) => {
       const existingItem = state.items.find(item => item.id === action.payload.id);
       
@@ -118,7 +137,13 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart } = cartSlice.actions;
+export const { 
+  initializeCart, 
+  addToCart, 
+  removeFromCart, 
+  updateQuantity, 
+  clearCart 
+} = cartSlice.actions;
 
 // Selector to get item quantity
 export const getItemQuantity = (state: { cart: CartState }, productId: number): number => {

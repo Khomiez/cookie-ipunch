@@ -77,19 +77,19 @@ export default function CartPage() {
       />
 
       {/* Cart Summary */}
-      <div className="px-4 mb-6">
+      <div className="px-4 mb-6  comic-text">
         <div className="max-w-md mx-auto">
           <div
             className="p-4 rounded-2xl"
             style={{ backgroundColor: "#eaf7ff" }}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="font-medium" style={{ color: "#7f6957" }}>
+              <span className="font-bold" style={{ color: "#7f6957" }}>
                 Total Items: {totalItems}
               </span>
               <button
                 onClick={handleClearCart}
-                className="text-sm underline opacity-75 hover:opacity-100 transition-opacity"
+                className="text-sm underline opacity-80 hover:opacity-100 transition-opacity"
                 style={{ color: "#7f6957" }}
               >
                 Clear Cart
