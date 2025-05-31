@@ -57,7 +57,7 @@ const ProductGrid = (props: Props) => {
   ];
 
   return (
-    <main className="px-4 pb-24">
+    <main className="px-4 pb-22">
       <div className="max-w-md mx-auto space-y-4">
         {products.map((product) => (
           <ProductCard key={product.id} product={product}/>

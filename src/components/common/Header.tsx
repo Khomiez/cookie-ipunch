@@ -32,7 +32,7 @@ const Header = ({ showBackButton = false, onBackClick, title }: Props) => {
           {showBackButton ? (
             <button
               onClick={onBackClick}
-              className="mr-2 p-1 rounded-full hover:bg-opacity-10 hover:bg-gray-500 transition-colors"
+              className="no-hover"
               aria-label="Go back"
             >
               <svg
