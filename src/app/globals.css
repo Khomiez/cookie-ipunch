@@ -12,7 +12,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-comic: var(--font-comic);
+  --font-comic: "Comic Sans MS", "Delius", system-ui;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -31,7 +31,28 @@ body {
 
 /* Comic font utility class */
 .font-comic {
-  font-family: var(--font-comic), "Comic Sans MS", cursive;
+  font-family: var(--font-comic);
+}
+
+/* Consistent tag styling */
+.product-tag {
+  position: absolute;
+  top: 15px;
+  left: 12px;
+  z-index: 10;
+  max-width: calc(100% - 24px);
+  font-family: var(--font-comic);
+  font-weight: 700;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: white;
+  background-color: #7f6957;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  transform: rotate(-12deg);
+  transform-origin: center;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 /* Custom animations for sprinkles */
@@ -71,4 +92,12 @@ body {
 button:not(.no-hover):hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(127, 105, 87, 0.2);
+}
+
+/* Ensure consistent font rendering across devices */
+.font-comic, 
+.comic-text {
+  font-family: var(--font-comic);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

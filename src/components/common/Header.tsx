@@ -58,8 +58,8 @@ const Header = ({ showBackButton = false, onBackClick, title }: Props) => {
           )}
 
           <h1
-            className="text-xl font-bold"
-            style={{ color: "#7f6957", fontFamily: "Comic Sans MS, cursive" }}
+            className="text-xl font-bold comic-text"
+            style={{ color: "#7f6957" }}
           >
             {title || "fatsprinkle.co"}
           </h1>

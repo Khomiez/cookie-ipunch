@@ -1,4 +1,4 @@
-// src/app/cart/page.tsx
+// src/app/(pages)/cart/page.tsx
 "use client";
 
 import React from "react";
@@ -45,8 +45,8 @@ export default function CartPage() {
             </div>
 
             <h2
-              className="text-2xl font-bold mb-4"
-              style={{ color: "#7f6957", fontFamily: "Comic Sans MS, cursive" }}
+              className="text-2xl font-bold mb-4 comic-text"
+              style={{ color: "#7f6957" }}
             >
               Your cart is empty
             </h2>

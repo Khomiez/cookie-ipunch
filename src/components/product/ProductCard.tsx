@@ -36,15 +36,10 @@ const ProductCard = ({ product }: Props) => {
       className="bg-white rounded-3xl p-4 shadow-lg relative overflow-hidden"
       style={{ isolation: "isolate" }}
     >
-      {/* Product Tag */}
+      {/* Product Tag - Using CSS class for consistency */}
       {product.tag && (
-        <div className="absolute top-3 left-3 z-10 max-w-[calc(100%-24px)]">
-          <div
-            className="px-2 py-1 rounded-full text-xs font-bold text-white transform -rotate-12 whitespace-nowrap"
-            style={{ backgroundColor: "#7f6957" }}
-          >
-            {product.tag}
-          </div>
+        <div className="product-tag">
+          {product.tag}
         </div>
       )}
 
@@ -67,11 +62,8 @@ const ProductCard = ({ product }: Props) => {
 
         <div className="flex-1">
           <h3
-            className="font-bold text-lg mb-1"
-            style={{
-              color: "#7f6957",
-              fontFamily: "Comic Sans MS, cursive",
-            }}
+            className="font-bold text-lg mb-1 comic-text"
+            style={{ color: "#7f6957" }}
           >
             {product.name}
           </h3>
