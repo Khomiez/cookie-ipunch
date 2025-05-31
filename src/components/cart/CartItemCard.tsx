@@ -1,0 +1,128 @@
+// src/components/cart/CartItemCard.tsx
+"use client";
+
+import React from "react";
+import { Trash2 } from "lucide-react";
+import { CartItem } from "@/store/slices/cartSlice";
+import { useAppDispatch } from "@/hooks/redux";
+import {
+  addToCart,
+  removeFromCart,
+  updateQuantity,
+} from "@/store/slices/cartSlice";
+import QuantityControls from "../product/QuantityControls";
+
+type Props = {
+  item: CartItem;
+};
+
+const CartItemCard = ({ item }: Props) => {
+  const dispatch = useAppDispatch();
+
+  const handleIncrease = () => {
+    dispatch(addToCart(item));
+  };
+
+  const handleDecrease = () => {
+    dispatch(removeFromCart(item.id));
+  };
+
+  const handleRemove = () => {
+    dispatch(updateQuantity({ id: item.id, quantity: 0 }));
+  };
+
+  const itemTotal = item.price * item.quantity;
+
+  return (
+    <div
+      className="bg-white rounded-3xl p-4 shadow-lg relative overflow-hidden"
+      style={{ isolation: "isolate" }}
+    >
+
+      {/* Product Tag */}
+      {item.tag && (
+        <div className="absolute top-3 left-3 z-10 max-w-[calc(100%-24px)]">
+          <div
+            className="px-2 py-1 rounded-full text-xs font-bold text-white transform -rotate-12 whitespace-nowrap"
+            style={{ backgroundColor: "#7f6957" }}
+          >
+            {item.tag}
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center space-x-4">
+        <div
+          className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0"
+          style={{ backgroundColor: "#fefbdc" }}
+        >
+          <div className="w-full h-full flex items-center justify-center">
+            <div
+              className="w-16 h-16 rounded-full"
+              style={{ backgroundColor: "#eaf7ff" }}
+            >
+              <div className="w-full h-full flex items-center justify-center text-2xl">
+                🍪
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h3
+                className="font-bold text-lg mb-1"
+                style={{
+                  color: "#7f6957",
+                  fontFamily: "Comic Sans MS, cursive",
+                }}
+              >
+                {item.name}
+              </h3>
+              <p
+                className="text-sm opacity-75 mb-2"
+                style={{ color: "#7f6957" }}
+              >
+                {item.description}
+              </p>
+            </div>
+
+            <button
+              onClick={handleRemove}
+              className="ml-2 p-2 no-hover"
+              aria-label="Remove item"
+            >
+              <Trash2 size={16} className="text-[#7f6957]" />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <span className="text-lg font-bold" style={{ color: "#7f6957" }}>
+                {item.price}.- each
+              </span>
+              <QuantityControls
+                quantity={item.quantity}
+                onIncrease={handleIncrease}
+                onDecrease={handleDecrease}
+                size="sm"
+              />
+            </div>
+
+            <div className="text-right">
+              <div className="text-sm opacity-75" style={{ color: "#7f6957" }}>
+                Total
+              </div>
+              <div className="text-xl font-bold" style={{ color: "#7f6957" }}>
+                {itemTotal}.-
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CartItemCard;

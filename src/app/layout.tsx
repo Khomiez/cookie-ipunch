@@ -1,7 +1,8 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Comic_Neue } from "next/font/google";
 import "./globals.css";
+import ReduxProvider from "@/components/providers/ReduxProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,15 +14,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Add Comic Neue as a close alternative to Comic Sans MS
-const comicNeue = Comic_Neue({
-  weight: ['300', '400', '700'],
-  variable: "--font-comic",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Fat Sprinkle - Fresh Cookies Delivered",
+  title: "fatsprinkle.co - Fresh Cookies Delivered",
   description: "Freshly baked cookies made with love, delivered to your door",
 };
 
@@ -33,9 +27,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${comicNeue.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ReduxProvider>
+          {children}
+        </ReduxProvider>
       </body>
     </html>
   );

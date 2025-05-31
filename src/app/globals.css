@@ -68,7 +68,7 @@ body {
 }
 
 /* Custom button hover effects */
-button:hover {
+button:not(.no-hover):hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(127, 105, 87, 0.2);
 }

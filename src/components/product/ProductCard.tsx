@@ -1,30 +1,41 @@
-import { IProduct } from "@/interfaces";
+// src/components/product/ProductCard.tsx
+"use client";
+
 import React from "react";
+import { IProduct } from "@/interfaces";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { addToCart, removeFromCart } from "@/store/slices/cartSlice";
+import QuantityControls from "./QuantityControls";
 
 type Props = {
   product: IProduct;
 };
 
 const ProductCard = ({ product }: Props) => {
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector((state) => state.cart.items);
+
+  // Find the quantity of this product in the cart
+  const cartItem = cartItems.find((item) => item.id === product.id);
+  const quantity = cartItem ? cartItem.quantity : 0;
+
+  const handleAddToCart = () => {
+    dispatch(addToCart(product));
+  };
+
+  const handleIncrease = () => {
+    dispatch(addToCart(product));
+  };
+
+  const handleDecrease = () => {
+    dispatch(removeFromCart(product.id));
+  };
+
   return (
     <div
       className="bg-white rounded-3xl p-4 shadow-lg relative overflow-hidden"
       style={{ isolation: "isolate" }}
     >
-      {/* Decorative sprinkles */}
-      <div
-        className="absolute top-2 right-2 w-2 h-2 rounded-full opacity-30"
-        style={{ backgroundColor: "#eaf7ff" }}
-      ></div>
-      <div
-        className="absolute top-4 right-6 w-1 h-1 rounded-full opacity-50"
-        style={{ backgroundColor: "#7f6957" }}
-      ></div>
-      <div
-        className="absolute top-6 right-3 w-1.5 h-1.5 rounded-full opacity-40"
-        style={{ backgroundColor: "#eaf7ff" }}
-      ></div>
-
       {/* Product Tag */}
       {product.tag && (
         <div className="absolute top-3 left-3 z-10 max-w-[calc(100%-24px)]">
@@ -56,8 +67,11 @@ const ProductCard = ({ product }: Props) => {
 
         <div className="flex-1">
           <h3
-            className="font-bold text-lg mb-1 font-comic"
-            style={{ color: "#7f6957" }}
+            className="font-bold text-lg mb-1"
+            style={{
+              color: "#7f6957",
+              fontFamily: "Comic Sans MS, cursive",
+            }}
           >
             {product.name}
           </h3>
@@ -70,12 +84,24 @@ const ProductCard = ({ product }: Props) => {
                 {product.price}.-
               </span>
             </div>
-            <button
-              className="px-4 py-2 rounded-full text-sm font-bold text-white transform hover:scale-105 transition-transform"
-              style={{ backgroundColor: "#7f6957" }}
-            >
-              Pre-order
-            </button>
+
+            {/* Conditional rendering: Pre-order button or Quantity controls */}
+            {quantity === 0 ? (
+              <button
+                onClick={handleAddToCart}
+                className="px-4 py-2 rounded-full text-sm font-bold text-white transform hover:scale-105 transition-transform"
+                style={{ backgroundColor: "#7f6957" }}
+              >
+                Pre-order
+              </button>
+            ) : (
+              <QuantityControls
+                quantity={quantity}
+                onIncrease={handleIncrease}
+                onDecrease={handleDecrease}
+                size="sm"
+              />
+            )}
           </div>
         </div>
       </div>
