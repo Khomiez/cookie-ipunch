@@ -56,11 +56,8 @@ const ProductCard = ({ product }: Props) => {
 
         <div className="flex-1">
           <h3
-            className="font-bold text-lg mb-1"
-            style={{
-              color: "#7f6957",
-              fontFamily: "Comic Sans MS, cursive",
-            }}
+            className="font-bold text-lg mb-1 font-comic"
+            style={{ color: "#7f6957" }}
           >
             {product.name}
           </h3>

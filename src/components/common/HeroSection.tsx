@@ -7,8 +7,8 @@ const HeroSection = (props: Props) => {
     <div className="px-4 mb-6">
       <div className="max-w-md mx-auto text-center">
         <h2
-          className="text-3xl font-bold mb-2"
-          style={{ color: "#7f6957", fontFamily: "Comic Sans MS, cursive" }}
+          className="text-3xl font-bold mb-2 font-comic"
+          style={{ color: "#7f6957" }}
         >
           Our Menu!
         </h2>

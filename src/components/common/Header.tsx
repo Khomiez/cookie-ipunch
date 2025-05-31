@@ -25,8 +25,8 @@ const Header = (props: Props) => {
             />
           </div>
           <h1
-            className="text-xl font-bold"
-            style={{ color: "#7f6957", fontFamily: "Comic Sans MS, cursive" }}
+            className="text-xl font-bold font-comic"
+            style={{ color: "#7f6957" }}
           >
             fatsprinkle.co
           </h1>
