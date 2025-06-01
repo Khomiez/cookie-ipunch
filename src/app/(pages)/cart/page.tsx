@@ -135,7 +135,7 @@ export default function CartPage() {
       <Header
         showBackButton={true}
         onBackClick={handleBackClick}
-        title="Your Cookie Jar"
+        title="Your Cart"
       />
 
       {/* Delivery Notification */}
