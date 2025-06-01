@@ -3,17 +3,20 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingBag, ArrowRight } from "lucide-react";
+import { ShoppingBag, ArrowRight, Truck, Store } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { clearCart } from "@/store/slices/cartSlice";
 import Header from "@/components/common/Header";
 import CartItemCard from "@/components/cart/CartItemCard";
 import stripePromise from "@/lib/stripe";
 
+type DeliveryMethod = 'shipping' | 'pickup';
+
 export default function CartPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('pickup');
   const { items, totalItems, totalPrice } = useAppSelector(
     (state) => state.cart
   );
@@ -44,7 +47,10 @@ export default function CartPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ 
+          items,
+          deliveryMethod,
+        }),
       });
 
       if (!response.ok) {
@@ -73,6 +79,11 @@ export default function CartPage() {
     } finally {
       setIsCheckoutLoading(false);
     }
+  };
+
+  const calculateTotal = () => {
+    const shippingFee = deliveryMethod === 'shipping' ? 40 : 0;
+    return totalPrice + shippingFee;
   };
 
   if (items.length === 0) {
@@ -146,9 +157,46 @@ export default function CartPage() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold" style={{ color: "#7f6957" }}>
-                Total: {totalPrice}.-
+                Total: {calculateTotal()}.-
               </span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Delivery Options */}
+      <div className="px-4 mb-6">
+        <div className="max-w-md mx-auto">
+          <h3 className="text-lg font-bold mb-3 comic-text" style={{ color: "#7f6957" }}>
+            Delivery Method
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setDeliveryMethod('pickup')}
+              className={`p-4 rounded-2xl border-2 flex flex-col items-center justify-center transition-all ${
+                deliveryMethod === 'pickup'
+                  ? 'border-[#7f6957] bg-[#eaf7ff]'
+                  : 'border-gray-200 hover:border-[#7f6957]'
+              }`}
+            >
+              <Store size={24} style={{ color: "#7f6957" }} />
+              <span className="mt-2 font-bold" style={{ color: "#7f6957" }}>
+                Pick Up
+              </span>
+            </button>
+            <button
+              onClick={() => setDeliveryMethod('shipping')}
+              className={`p-4 rounded-2xl border-2 flex flex-col items-center justify-center transition-all ${
+                deliveryMethod === 'shipping'
+                  ? 'border-[#7f6957] bg-[#eaf7ff]'
+                  : 'border-gray-200 hover:border-[#7f6957]'
+              }`}
+            >
+              <Truck size={24} style={{ color: "#7f6957" }} />
+              <span className="mt-2 font-bold" style={{ color: "#7f6957" }}>
+                Shipping (+40.-)
+              </span>
+            </button>
           </div>
         </div>
       </div>

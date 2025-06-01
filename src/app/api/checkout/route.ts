@@ -9,7 +9,13 @@ export async function POST(request: NextRequest) {
     console.log("=== CHECKOUT API STARTED ===");
     
     // Step 1: Parse request body
-    const { items }: { items: CartItem[] } = await request.json();
+    const { 
+      items,
+      deliveryMethod,
+    }: { 
+      items: CartItem[],
+      deliveryMethod: 'shipping' | 'pickup',
+    } = await request.json();
     
     console.log("Received items:", items?.length || 0);
 
@@ -17,6 +23,11 @@ export async function POST(request: NextRequest) {
     if (!items || items.length === 0) {
       console.error("❌ No items in cart");
       return NextResponse.json({ error: "No items in cart" }, { status: 400 });
+    }
+
+    if (!deliveryMethod) {
+      console.error("❌ Delivery method not selected");
+      return NextResponse.json({ error: "Please select a delivery method" }, { status: 400 });
     }
 
     // Step 3: Check Stripe initialization
@@ -67,6 +78,21 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Add shipping fee if delivery method is shipping
+    if (deliveryMethod === 'shipping') {
+      lineItems.push({
+        price_data: {
+          currency: "thb",
+          product_data: {
+            name: "Shipping Fee",
+            description: "Delivery fee for shipping",
+          },
+          unit_amount: 4000, // 40 THB in satang
+        },
+        quantity: 1,
+      });
+    }
+
     console.log(`✅ Created ${lineItems.length} line items`);
 
     // Step 7: Configure payment methods
@@ -84,21 +110,32 @@ export async function POST(request: NextRequest) {
         source: "fatsprinkle_preorder",
         order_type: "pre_order",
         total_items: items.reduce((sum, item) => sum + item.quantity, 0).toString(),
+        delivery_method: deliveryMethod,
       },
-      billing_address_collection: "required",
-      shipping_address_collection: {
+      customer_email: request.headers.get('x-user-email') || undefined,
+      billing_address_collection: deliveryMethod === 'shipping' ? 'required' : 'auto',
+      shipping_address_collection: deliveryMethod === 'shipping' ? {
         allowed_countries: ["TH"],
-      },
+      } : undefined,
       phone_number_collection: {
         enabled: true,
       },
       customer_creation: "always",
-      // Add locale for Thai language support
       locale: "th",
-      // Configure automatic tax if needed
       automatic_tax: {
-        enabled: false, // Set to true if you have tax rates configured
+        enabled: false,
       },
+      custom_fields: [
+        {
+          key: 'customer_name',
+          label: {
+            type: 'custom',
+            custom: 'ชื่อผู้รับ',
+          },
+          type: 'text',
+          optional: false,
+        },
+      ],
     };
 
     console.log("Session params:", JSON.stringify(sessionParams, null, 2));
