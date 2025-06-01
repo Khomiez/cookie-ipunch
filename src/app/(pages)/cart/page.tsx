@@ -1,17 +1,19 @@
 // src/app/(pages)/cart/page.tsx
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, ArrowRight } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { clearCart } from "@/store/slices/cartSlice";
 import Header from "@/components/common/Header";
 import CartItemCard from "@/components/cart/CartItemCard";
+import stripePromise from "@/lib/stripe";
 
 export default function CartPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const { items, totalItems, totalPrice } = useAppSelector(
     (state) => state.cart
   );
@@ -23,6 +25,52 @@ export default function CartPage() {
   const handleClearCart = () => {
     if (window.confirm("Are you sure you want to clear your cart?")) {
       dispatch(clearCart());
+    }
+  };
+
+  const handleCheckout = async () => {
+    setIsCheckoutLoading(true);
+
+    try {
+      const stripe = await stripePromise;
+
+      if (!stripe) {
+        throw new Error("Stripe failed to initialize");
+      }
+
+      // Call your API to create checkout session
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ items }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create checkout session");
+      }
+
+      const { sessionId } = await response.json();
+
+      if (!sessionId) {
+        throw new Error("No session ID returned");
+      }
+
+      // Redirect to Stripe Checkout
+      const { error } = await stripe.redirectToCheckout({
+        sessionId,
+      });
+
+      if (error) {
+        console.error("Error redirecting to checkout:", error);
+        alert("Error redirecting to checkout. Please try again.");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Something went wrong with checkout. Please try again.");
+    } finally {
+      setIsCheckoutLoading(false);
     }
   };
 
@@ -120,11 +168,22 @@ export default function CartPage() {
       >
         <div className="max-w-md mx-auto space-y-3">
           <button
-            className="w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center space-x-2 shadow-lg transform hover:scale-105 transition-transform"
+            onClick={handleCheckout}
+            disabled={isCheckoutLoading}
+            className="w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center space-x-2 shadow-lg transform hover:scale-105 transition-transform disabled:opacity-50 disabled:transform-none"
             style={{ backgroundColor: "#7f6957" }}
           >
-            <span>Proceed to Checkout</span>
-            <ArrowRight size={24} />
+            {isCheckoutLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <span>Proceed to Checkout</span>
+                <ArrowRight size={24} />
+              </>
+            )}
           </button>
 
           <button
