@@ -24,7 +24,7 @@ const FloatingCardBar = (props: Props) => {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 pt-2 pb-1 z-40"
+      className="fixed bottom-0 left-0 right-0 pt-2 pb-1 px-1 z-40"
       style={{ backgroundColor: "#fefbdc" }}
     >
       <div className="max-w-md mx-auto">

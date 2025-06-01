@@ -8,6 +8,7 @@ import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { clearCart } from "@/store/slices/cartSlice";
 import Header from "@/components/common/Header";
 import CartItemCard from "@/components/cart/CartItemCard";
+import DeliveryNoti from "@/components/notification/DeliveryNoti";
 import stripePromise from "@/lib/stripe";
 
 type DeliveryMethod = 'shipping' | 'pickup';
@@ -26,7 +27,7 @@ export default function CartPage() {
   };
 
   const handleClearCart = () => {
-    if (window.confirm("Are you sure you want to clear your cart?")) {
+    if (window.confirm("Remove all cookies from cart? 🥺")) {
       dispatch(clearCart());
     }
   };
@@ -41,7 +42,6 @@ export default function CartPage() {
         throw new Error("Stripe failed to initialize");
       }
 
-      // Call your API to create checkout session
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
@@ -64,7 +64,6 @@ export default function CartPage() {
         throw new Error("No session ID returned");
       }
 
-      // Redirect to Stripe Checkout
       const { error } = await stripe.redirectToCheckout({
         sessionId,
       });
@@ -86,41 +85,44 @@ export default function CartPage() {
     return totalPrice + shippingFee;
   };
 
+  const shippingFee = deliveryMethod === 'shipping' ? 40 : 0;
+
+  // Empty cart state with cozy messaging
   if (items.length === 0) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: "#fefbdc" }}>
         <Header
           showBackButton={true}
           onBackClick={handleBackClick}
-          title="Your Cart"
+          title="Your cart"
         />
 
         <div className="px-4 py-8">
           <div className="max-w-md mx-auto text-center">
             <div
-              className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
+              className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center"
               style={{ backgroundColor: "#eaf7ff" }}
             >
-              <ShoppingBag size={40} style={{ color: "#7f6957" }} />
+              <div className="text-4xl">🍪</div>
             </div>
 
             <h2
               className="text-2xl font-bold mb-4 comic-text"
               style={{ color: "#7f6957" }}
             >
-              Your cart is empty
+              Your cart is empty!
             </h2>
 
-            <p className="text-sm opacity-75 mb-8" style={{ color: "#7f6957" }}>
-              Looks like you haven't added any delicious cookies yet!
+            <p className="text-sm opacity-75 mb-8 comic-text" style={{ color: "#7f6957" }}>
+              Let's fill it with some freshly baked goodness 🌟
             </p>
 
             <button
               onClick={() => router.push("/")}
-              className="px-6 py-3 rounded-full text-white font-bold transform hover:scale-105 transition-transform"
+              className="px-8 py-4 rounded-full text-white font-bold transform hover:scale-105 transition-transform comic-text"
               style={{ backgroundColor: "#7f6957" }}
             >
-              Start Shopping
+              Start Baking! 🍪
             </button>
           </div>
         </div>
@@ -133,76 +135,106 @@ export default function CartPage() {
       <Header
         showBackButton={true}
         onBackClick={handleBackClick}
-        title="Your Cart"
+        title="Your cart"
       />
 
-      {/* Cart Summary */}
-      <div className="px-4 mb-6 comic-text">
+      {/* Delivery Notification */}
+      <DeliveryNoti />
+
+      {/* Cart Summary Header */}
+      <div className="px-4 mb-6">
         <div className="max-w-md mx-auto">
-          <div
-            className="p-4 rounded-2xl"
-            style={{ backgroundColor: "#eaf7ff" }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-bold" style={{ color: "#7f6957" }}>
-                Total Items: {totalItems}
-              </span>
-              <button
-                onClick={handleClearCart}
-                className="text-sm underline opacity-80 hover:opacity-100 transition-opacity"
-                style={{ color: "#7f6957" }}
-              >
-                Clear Cart
-              </button>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold comic-text" style={{ color: "#7f6957" }}>
+                Your Sweet Selection 🍪
+              </h2>
+              <p className="text-sm opacity-75 comic-text" style={{ color: "#7f6957" }}>
+                {totalItems} delicious treat{totalItems !== 1 ? 's' : ''}
+              </p>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold" style={{ color: "#7f6957" }}>
-                Total: {calculateTotal()}.-
-              </span>
-            </div>
+            <button
+              onClick={handleClearCart}
+              className="text-sm underline opacity-80 hover:opacity-100 transition-opacity comic-text"
+              style={{ color: "#7f6957" }}
+            >
+              Clear All
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Delivery Options */}
+      {/* Delivery Method Selection */}
       <div className="px-4 mb-6">
         <div className="max-w-md mx-auto">
-          <h3 className="text-lg font-bold mb-3 comic-text" style={{ color: "#7f6957" }}>
-            Delivery Method
+          <h3 className="text-lg font-bold mb-4 comic-text" style={{ color: "#7f6957" }}>
+            How would you like your cookies? 🚚
           </h3>
-          <div className="grid grid-cols-2 gap-3">
+          
+          <div className="space-y-3">
+            {/* Pickup Option */}
             <button
               onClick={() => setDeliveryMethod('pickup')}
-              className={`p-4 rounded-2xl border-2 flex flex-col items-center justify-center transition-all ${
+              className={`w-full p-4 rounded-2xl border-2 transition-all ${
                 deliveryMethod === 'pickup'
-                  ? 'border-[#7f6957] bg-[#eaf7ff]'
+                  ? 'border-[#7f6957] shadow-lg'
                   : 'border-gray-200 hover:border-[#7f6957]'
               }`}
+              style={{ backgroundColor: deliveryMethod === 'pickup' ? "#eaf7ff" : "white" }}
             >
-              <Store size={24} style={{ color: "#7f6957" }} />
-              <span className="mt-2 font-bold" style={{ color: "#7f6957" }}>
-                Pick Up
-              </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-3 rounded-full ${
+                    deliveryMethod === 'pickup' ? 'bg-[#7f6957]' : 'bg-gray-100'
+                  }`}>
+                    <Store size={20} className={deliveryMethod === 'pickup' ? 'text-white' : 'text-gray-500'} />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-bold comic-text" style={{ color: "#7f6957" }}>Pick Up</div>
+                    <div className="text-sm opacity-75" style={{ color: "#7f6957" }}>Come say hi! 👋</div>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="font-bold text-green-600 comic-text">FREE</span>
+                  <span className="text-xs opacity-75" style={{ color: "#7f6957" }}>Ready Friday</span>
+                </div>
+              </div>
             </button>
+
+            {/* Shipping Option */}
             <button
               onClick={() => setDeliveryMethod('shipping')}
-              className={`p-4 rounded-2xl border-2 flex flex-col items-center justify-center transition-all ${
+              className={`w-full p-4 rounded-2xl border-2 transition-all ${
                 deliveryMethod === 'shipping'
-                  ? 'border-[#7f6957] bg-[#eaf7ff]'
+                  ? 'border-[#7f6957] shadow-lg'
                   : 'border-gray-200 hover:border-[#7f6957]'
               }`}
+              style={{ backgroundColor: deliveryMethod === 'shipping' ? "#eaf7ff" : "white" }}
             >
-              <Truck size={24} style={{ color: "#7f6957" }} />
-              <span className="mt-2 font-bold" style={{ color: "#7f6957" }}>
-                Shipping (+40.-)
-              </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-3 rounded-full ${
+                    deliveryMethod === 'shipping' ? 'bg-[#7f6957]' : 'bg-gray-100'
+                  }`}>
+                    <Truck size={20} className={deliveryMethod === 'shipping' ? 'text-white' : 'text-gray-500'} />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-bold comic-text" style={{ color: "#7f6957" }}>Home Delivery</div>
+                    <div className="text-sm opacity-75" style={{ color: "#7f6957" }}>Straight to your door 🏠</div>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="font-bold comic-text" style={{ color: "#7f6957" }}>40.-</span>
+                  <span className="text-xs opacity-75" style={{ color: "#7f6957" }}>Friday delivery</span>
+                </div>
+              </div>
             </button>
           </div>
         </div>
       </div>
 
       {/* Cart Items */}
-      <div className="px-4 pb-48">
+      <div className="px-4 mb-6">
         <div className="max-w-md mx-auto space-y-4">
           {items.map((item) => (
             <CartItemCard key={item.id} item={item} />
@@ -210,22 +242,63 @@ export default function CartPage() {
         </div>
       </div>
 
+      {/* Order Summary */}
+      <div className="px-4 pb-40">
+        <div className="max-w-md mx-auto">
+          <div className="bg-white rounded-2xl p-4 shadow-lg">
+            <h3 className="text-lg font-bold mb-4 comic-text" style={{ color: "#7f6957" }}>
+              Sweet Summary 📝
+            </h3>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="comic-text" style={{ color: "#7f6957" }}>
+                  {totalItems} delicious cookie{totalItems !== 1 ? 's' : ''}
+                </span>
+                <span className="font-bold comic-text" style={{ color: "#7f6957" }}>{totalPrice.toFixed(0)}.-</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="comic-text" style={{ color: "#7f6957" }}>
+                  {deliveryMethod === 'pickup' ? 'Pickup' : 'Delivery 🚚'}
+                </span>
+                <span className={`font-bold comic-text ${shippingFee === 0 ? 'text-green-600' : ''}`} 
+                      style={{ color: shippingFee === 0 ? "#16a34a" : "#7f6957" }}>
+                  {shippingFee === 0 ? 'FREE! 🎉' : `${shippingFee}.-`}
+                </span>
+              </div>
+              
+              <div className="border-t-2 border-dashed border-gray-200 pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xl font-bold comic-text" style={{ color: "#7f6957" }}>
+                    Total Sweetness
+                  </span>
+                  <span className="text-2xl font-bold comic-text" style={{ color: "#7f6957" }}>
+                    {calculateTotal().toFixed(0)}.-
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Checkout Button */}
       <div
-        className="fixed bottom-0 left-0 right-0 p-4 z-40"
+        className="fixed bottom-0 left-0 right-0 p-2 z-40"
         style={{ backgroundColor: "#fefbdc" }}
       >
         <div className="max-w-md mx-auto space-y-3">
           <button
             onClick={handleCheckout}
             disabled={isCheckoutLoading}
-            className="w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center space-x-2 shadow-lg transform hover:scale-105 transition-transform disabled:opacity-50 disabled:transform-none"
+            className="w-full py-4 rounded-2xl text-white font-bold text-lg flex items-center justify-center space-x-2 shadow-lg transform hover:scale-105 transition-transform disabled:opacity-50 disabled:transform-none comic-text"
             style={{ backgroundColor: "#7f6957" }}
           >
             {isCheckoutLoading ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                <span>Processing...</span>
+                <span>Baking your order... 🍪</span>
               </>
             ) : (
               <>
@@ -237,14 +310,14 @@ export default function CartPage() {
 
           <button
             onClick={() => router.push("/")}
-            className="w-full py-3 rounded-2xl font-bold text-lg border-2 border-dashed transform hover:scale-105 transition-transform"
+            className="w-full py-3 rounded-2xl font-bold text-lg border-2 border-dashed transform hover:scale-105 transition-transform comic-text"
             style={{
               borderColor: "#7f6957",
               color: "#7f6957",
               backgroundColor: "transparent",
             }}
           >
-            Continue Shopping
+            Keep Shopping
           </button>
         </div>
       </div>

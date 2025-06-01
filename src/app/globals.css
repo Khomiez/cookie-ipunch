@@ -44,7 +44,7 @@ body {
 /* Consistent tag styling */
 .product-tag {
   position: absolute;
-  top: 20px;
+  top: 20px; /* Default position for larger screens */
   left: 5px;
   z-index: 10;
   max-width: calc(100% - 24px);
@@ -63,6 +63,13 @@ body {
   /* Ensure consistent font rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Adjust tag position on mobile */
+@media (max-width: 640px) {
+  .product-tag {
+    top: 30px; /* Slightly lower position on mobile */
+  }
 }
 
 /* Custom animations for sprinkles */
@@ -105,7 +112,7 @@ button:not(.no-hover):hover {
 }
 
 /* Enhanced font rendering for comic text with Kalam */
-.font-comic, 
+.font-comic,
 .comic-text {
   font-family: var(--font-comic_neue), cursive, system-ui;
   -webkit-font-smoothing: antialiased;
