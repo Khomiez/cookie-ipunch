@@ -114,7 +114,7 @@ export default function CartPage() {
             </h2>
 
             <p className="text-sm opacity-75 mb-8 comic-text" style={{ color: "#7f6957" }}>
-              Let's fill it with some freshly baked goodness 🌟
+              Add some cookies to your cart 🌟
             </p>
 
             <button
@@ -122,7 +122,7 @@ export default function CartPage() {
               className="px-8 py-4 rounded-full text-white font-bold transform hover:scale-105 transition-transform comic-text"
               style={{ backgroundColor: "#7f6957" }}
             >
-              Start Baking! 🍪
+              Start Shopping! 🍪
             </button>
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function CartPage() {
       <Header
         showBackButton={true}
         onBackClick={handleBackClick}
-        title="Your cart"
+        title="Your Cookie Jar"
       />
 
       {/* Delivery Notification */}
@@ -147,10 +147,10 @@ export default function CartPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl font-bold comic-text" style={{ color: "#7f6957" }}>
-                Your Sweet Selection 🍪
+                Your cookies 🍪
               </h2>
               <p className="text-sm opacity-75 comic-text" style={{ color: "#7f6957" }}>
-                {totalItems} delicious treat{totalItems !== 1 ? 's' : ''}
+                {totalItems} {totalItems !== 1 ? 'cookies' : 'cookie'}
               </p>
             </div>
             <button
@@ -168,7 +168,7 @@ export default function CartPage() {
       <div className="px-4 mb-6">
         <div className="max-w-md mx-auto">
           <h3 className="text-lg font-bold mb-4 comic-text" style={{ color: "#7f6957" }}>
-            How would you like your cookies? 🚚
+            Delivery Method 🚚
           </h3>
           
           <div className="space-y-3">
@@ -247,13 +247,13 @@ export default function CartPage() {
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-2xl p-4 shadow-lg">
             <h3 className="text-lg font-bold mb-4 comic-text" style={{ color: "#7f6957" }}>
-              Sweet Summary 📝
+              Order Summary 📝
             </h3>
             
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="comic-text" style={{ color: "#7f6957" }}>
-                  {totalItems} delicious cookie{totalItems !== 1 ? 's' : ''}
+                  {totalItems} {totalItems !== 1 ? 'cookies' : 'cookie'}
                 </span>
                 <span className="font-bold comic-text" style={{ color: "#7f6957" }}>{totalPrice.toFixed(0)}.-</span>
               </div>
@@ -271,7 +271,7 @@ export default function CartPage() {
               <div className="border-t-2 border-dashed border-gray-200 pt-3">
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-bold comic-text" style={{ color: "#7f6957" }}>
-                    Total Sweetness
+                    Total
                   </span>
                   <span className="text-2xl font-bold comic-text" style={{ color: "#7f6957" }}>
                     {calculateTotal().toFixed(0)}.-
