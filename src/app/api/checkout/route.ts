@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
     
     // Step 1: Parse request body
     const { items }: { items: CartItem[] } = await request.json();
+    
     console.log("Received items:", items?.length || 0);
 
     // Step 2: Validate input
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
         throw new Error(`Invalid item: ${item.name || 'Unknown'}`);
       }
 
-      // Always use price_data for simplicity and compatibility
+      // Use price_data for all payment methods
       lineItems.push({
         price_data: {
           currency: "thb",
@@ -68,11 +69,13 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Created ${lineItems.length} line items`);
 
-    // Step 7: Create Stripe session
-    console.log("🔄 Creating Stripe checkout session...");
+    // Step 7: Configure payment methods
+    const paymentMethodTypes: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = ["card", "promptpay"];
+
+    console.log("🔄 Creating Stripe checkout session with payment methods:", paymentMethodTypes);
     
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      payment_method_types: ["card"],
+      payment_method_types: paymentMethodTypes,
       line_items: lineItems,
       mode: "payment",
       success_url: `${domain}/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -90,6 +93,12 @@ export async function POST(request: NextRequest) {
         enabled: true,
       },
       customer_creation: "always",
+      // Add locale for Thai language support
+      locale: "th",
+      // Configure automatic tax if needed
+      automatic_tax: {
+        enabled: false, // Set to true if you have tax rates configured
+      },
     };
 
     console.log("Session params:", JSON.stringify(sessionParams, null, 2));
@@ -112,7 +121,7 @@ export async function POST(request: NextRequest) {
       console.error("Error details:", {
         name: error.name,
         message: error.message,
-        stack: error.stack?.split('\n').slice(0, 5).join('\n') // First 5 lines of stack
+        stack: error.stack?.split('\n').slice(0, 5).join('\n')
       });
     }
 

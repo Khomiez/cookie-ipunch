@@ -48,7 +48,8 @@ export default function CartPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create checkout session");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create checkout session");
       }
 
       const { sessionId } = await response.json();
@@ -68,7 +69,7 @@ export default function CartPage() {
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      alert("Something went wrong with checkout. Please try again.");
+      alert(`Something went wrong with checkout: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
     } finally {
       setIsCheckoutLoading(false);
     }
@@ -125,7 +126,7 @@ export default function CartPage() {
       />
 
       {/* Cart Summary */}
-      <div className="px-4 mb-6  comic-text">
+      <div className="px-4 mb-6 comic-text">
         <div className="max-w-md mx-auto">
           <div
             className="p-4 rounded-2xl"
@@ -153,7 +154,7 @@ export default function CartPage() {
       </div>
 
       {/* Cart Items */}
-      <div className="px-4 pb-32">
+      <div className="px-4 pb-48">
         <div className="max-w-md mx-auto space-y-4">
           {items.map((item) => (
             <CartItemCard key={item.id} item={item} />
