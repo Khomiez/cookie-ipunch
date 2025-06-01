@@ -31,6 +31,8 @@ const CartItemCard = ({ item }: Props) => {
     dispatch(updateQuantity({ id: item.id, quantity: 0 }));
   };
 
+  // Price is now stored directly in Baht
+  const displayPrice = item.price.toFixed(0);
   const itemTotal = item.price * item.quantity;
 
   return (
@@ -51,14 +53,22 @@ const CartItemCard = ({ item }: Props) => {
           style={{ backgroundColor: "#fefbdc" }}
         >
           <div className="w-full h-full flex items-center justify-center">
-            <div
-              className="w-16 h-16 rounded-full"
-              style={{ backgroundColor: "#eaf7ff" }}
-            >
-              <div className="w-full h-full flex items-center justify-center text-2xl">
-                🍪
+            {item.image && item.image !== '/api/placeholder/300/300' ? (
+              <img 
+                src={item.image} 
+                alt={item.name}
+                className="w-full h-full object-cover rounded-2xl"
+              />
+            ) : (
+              <div
+                className="w-16 h-16 rounded-full"
+                style={{ backgroundColor: "#eaf7ff" }}
+              >
+                <div className="w-full h-full flex items-center justify-center text-2xl">
+                  🍪
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -91,7 +101,7 @@ const CartItemCard = ({ item }: Props) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <span className="text-lg font-bold" style={{ color: "#7f6957" }}>
-                {item.price}.- each
+                {displayPrice}.- each
               </span>
               <QuantityControls
                 quantity={item.quantity}
@@ -106,7 +116,7 @@ const CartItemCard = ({ item }: Props) => {
                 Total
               </div>
               <div className="text-xl font-bold" style={{ color: "#7f6957" }}>
-                {itemTotal}.-
+                {itemTotal.toFixed(0)}.-
               </div>
             </div>
           </div>

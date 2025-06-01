@@ -3,7 +3,7 @@ export interface IProduct {
   id: string; // Stripe uses string IDs
   name: string;
   description: string;
-  price: number; // Price in cents (e.g., 4900 for 49.00 THB)
+  price: number; // Price in Baht (e.g., 49 for 49.00 THB)
   priceId: string; // Stripe price ID for checkout
   image: string;
   tag: string;

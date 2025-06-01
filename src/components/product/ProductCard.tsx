@@ -19,8 +19,8 @@ const ProductCard = ({ product }: Props) => {
   const cartItem = cartItems.find((item) => item.id === product.id);
   const quantity = cartItem ? cartItem.quantity : 0;
 
-  // Format price from cents to display format
-  const displayPrice = (product.price / 100).toFixed(0); // Remove decimals for whole numbers
+  // Price is now stored directly in Baht
+  const displayPrice = product.price.toFixed(0); // Remove decimals for whole numbers
 
   const handleAddToCart = () => {
     dispatch(addToCart(product));

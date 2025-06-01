@@ -22,7 +22,7 @@ export async function GET() {
           id: product.id,
           name: product.name,
           description: product.description || "",
-          price: price.unit_amount || 0, // Price in cents
+          price: (price.unit_amount || 0) / 100, // Convert cents to Baht
           priceId: price.id,
           image: product.images[0] || "/api/placeholder/300/300",
           images: product.images,
@@ -56,9 +56,9 @@ export async function POST(request: Request) {
       },
     });
 
-    // Create price for the product
+    // Create price for the product (convert Baht to cents for Stripe)
     const stripePrice = await stripe.prices.create({
-      unit_amount: price, // Price should be in cents
+      unit_amount: Math.round(price * 100), // Convert Baht to cents
       currency: "thb",
       product: product.id,
     });
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
       id: product.id,
       name: product.name,
       description: product.description || "",
-      price: stripePrice.unit_amount || 0,
+      price: price, // Store in Baht directly
       priceId: stripePrice.id,
       image: product.images[0] || "/api/placeholder/300/300",
       images: product.images,

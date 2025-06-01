@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
                 tag: item.tag || "",
               },
             },
-            unit_amount: item.price, // Assuming price is already in cents
+            unit_amount: Math.round(item.price * 100), // Convert Baht to cents for Stripe
           },
           quantity: item.quantity,
         };
