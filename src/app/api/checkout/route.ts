@@ -1,3 +1,4 @@
+// src/app/api/checkout/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import stripe from "@/lib/stripe-server";
 import { CartItem } from "@/store/slices/cartSlice";
@@ -10,22 +11,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No items in cart" }, { status: 400 });
     }
 
-    // Convert cart items to Stripe line items
-    const lineItems = items.map((item) => ({
-      price_data: {
-        currency: "thb", // Thai Baht
-        product_data: {
-          name: item.name,
-          description: item.description,
-          metadata: {
-            product_id: item.id.toString(),
-            tag: item.tag || "",
+    // Convert cart items to Stripe line items using Price IDs
+    const lineItems = items.map((item) => {
+      // Check if the item has a priceId (from Stripe)
+      if (item.priceId) {
+        return {
+          price: item.priceId, // Use Stripe Price ID directly
+          quantity: item.quantity,
+        };
+      } else {
+        // Fallback for items without priceId (legacy/mock data)
+        return {
+          price_data: {
+            currency: "thb",
+            product_data: {
+              name: item.name,
+              description: item.description,
+              metadata: {
+                product_id: item.id.toString(),
+                tag: item.tag || "",
+              },
+            },
+            unit_amount: item.price, // Assuming price is already in cents
           },
-        },
-        unit_amount: item.price * 100, // Stripe expects amount in cents
-      },
-      quantity: item.quantity,
-    }));
+          quantity: item.quantity,
+        };
+      }
+    });
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({

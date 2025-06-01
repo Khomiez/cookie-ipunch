@@ -52,11 +52,12 @@ const saveCartToStorage = (state: CartState) => {
   }
 };
 
-// Calculate totals
+// Calculate totals - handle price in cents
 const calculateTotals = (items: CartItem[]): { totalItems: number; totalPrice: number } => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  return { totalItems, totalPrice };
+  // Price is stored in cents, so divide by 100 for display
+  const totalPrice = items.reduce((sum, item) => sum + (item.price / 100) * item.quantity, 0);
+  return { totalItems, totalPrice: Math.round(totalPrice * 100) / 100 }; // Round to 2 decimal places
 };
 
 const cartSlice = createSlice({
@@ -90,7 +91,7 @@ const cartSlice = createSlice({
       saveCartToStorage(state);
     },
     
-    removeFromCart: (state, action: PayloadAction<number>) => {
+    removeFromCart: (state, action: PayloadAction<string>) => { // Changed to string for Stripe IDs
       const existingItem = state.items.find(item => item.id === action.payload);
       
       if (existingItem) {
@@ -108,7 +109,7 @@ const cartSlice = createSlice({
       saveCartToStorage(state);
     },
     
-    updateQuantity: (state, action: PayloadAction<{ id: number; quantity: number }>) => {
+    updateQuantity: (state, action: PayloadAction<{ id: string; quantity: number }>) => { // Changed to string
       const { id, quantity } = action.payload;
       
       if (quantity <= 0) {
@@ -146,7 +147,7 @@ export const {
 } = cartSlice.actions;
 
 // Selector to get item quantity
-export const getItemQuantity = (state: { cart: CartState }, productId: number): number => {
+export const getItemQuantity = (state: { cart: CartState }, productId: string): number => { // Changed to string
   const item = state.cart.items.find(item => item.id === productId);
   return item ? item.quantity : 0;
 };

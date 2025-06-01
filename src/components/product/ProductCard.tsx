@@ -19,6 +19,9 @@ const ProductCard = ({ product }: Props) => {
   const cartItem = cartItems.find((item) => item.id === product.id);
   const quantity = cartItem ? cartItem.quantity : 0;
 
+  // Format price from cents to display format
+  const displayPrice = (product.price / 100).toFixed(0); // Remove decimals for whole numbers
+
   const handleAddToCart = () => {
     dispatch(addToCart(product));
   };
@@ -49,14 +52,22 @@ const ProductCard = ({ product }: Props) => {
           style={{ backgroundColor: "#fefbdc" }}
         >
           <div className="w-full h-full flex items-center justify-center">
-            <div
-              className="w-16 h-16 rounded-full"
-              style={{ backgroundColor: "#eaf7ff" }}
-            >
-              <div className="w-full h-full flex items-center justify-center text-2xl">
-                🍪
+            {product.image && product.image !== '/api/placeholder/300/300' ? (
+              <img 
+                src={product.image} 
+                alt={product.name}
+                className="w-full h-full object-cover rounded-2xl"
+              />
+            ) : (
+              <div
+                className="w-16 h-16 rounded-full"
+                style={{ backgroundColor: "#eaf7ff" }}
+              >
+                <div className="w-full h-full flex items-center justify-center text-2xl">
+                  🍪
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -73,7 +84,7 @@ const ProductCard = ({ product }: Props) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <span className="text-2xl font-bold" style={{ color: "#7f6957" }}>
-                {product.price}.-
+                {displayPrice}.-
               </span>
             </div>
 
