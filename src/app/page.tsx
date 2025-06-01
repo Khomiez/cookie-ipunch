@@ -1,12 +1,16 @@
-import Image from "next/image";
+"use client";
 import { ShoppingBag, Filter, Menu } from "lucide-react";
 import ProductGrid from "@/components/product/ProductGrid";
 import FloatingCardBar from "@/components/cart/FloatingCardBar";
 import DeliveryNoti from "@/components/notification/DeliveryNoti";
 import {Header} from "@/components/common";
 import HeroSection from "@/components/common/HeroSection";
+import { useState } from "react";
 
 export default function Home() {
+
+  const [cookieNumber, setCookieNumber] = useState(0);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#fefbdc" }}>
       {/* Header */}
@@ -29,13 +33,13 @@ export default function Home() {
             <span className="text-sm font-medium">Filter & Sort</span>
           </button>
           <div className="text-sm opacity-75" style={{ color: "#7f6957" }}>
-            6 delicious options
+            {cookieNumber} delicious options
           </div>
         </div>
       </div>
 
       {/* Product Grid */}
-      <ProductGrid />
+      <ProductGrid setCookieNumber={setCookieNumber} />
 
       {/* Floating Cart Bar */}
       <FloatingCardBar />

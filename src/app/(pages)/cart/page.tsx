@@ -19,7 +19,7 @@ export default function CartPage() {
   );
 
   const handleBackClick = () => {
-    router.back();
+    router.push("/");
   };
 
   const handleClearCart = () => {

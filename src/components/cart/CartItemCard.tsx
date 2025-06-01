@@ -19,6 +19,8 @@ type Props = {
 const CartItemCard = ({ item }: Props) => {
   const dispatch = useAppDispatch();
 
+
+
   const handleIncrease = () => {
     dispatch(addToCart(item));
   };

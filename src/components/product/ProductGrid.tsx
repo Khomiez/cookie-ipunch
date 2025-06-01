@@ -5,9 +5,11 @@ import React, { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import { IProduct } from "@/interfaces";
 
-type Props = {};
+type Props = {
+  setCookieNumber: (number: number) => void;
+};
 
-const ProductGrid = (props: Props) => {
+const ProductGrid = ({ setCookieNumber }: Props) => {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +26,7 @@ const ProductGrid = (props: Props) => {
 
         const data = await response.json();
         setProducts(data);
+        setCookieNumber(data.length);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
         console.error("Error fetching products:", err);
