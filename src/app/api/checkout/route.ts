@@ -51,10 +51,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 5: Get domain
-    const domain =
-      process.env.NEXT_PUBLIC_DOMAIN ||
-      `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+    // Step 5: Get domain with proper protocol handling
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const host = request.headers.get('host') || 'localhost:3000';
+    const domain = process.env.NEXT_PUBLIC_DOMAIN || `${protocol}://${host}`;
+    
     console.log("✅ Using domain:", domain);
 
     // Step 6: Process line items
