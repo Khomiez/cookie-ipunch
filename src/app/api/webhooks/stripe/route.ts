@@ -67,6 +67,38 @@ export async function POST(request: NextRequest) {
       // TODO: Handle failed payment (notify customer, log for admin)
       break;
 
+    case "checkout.session.expired":
+      const expiredSession = event.data.object as Stripe.Checkout.Session;
+      console.log("Checkout session expired:", expiredSession.id);
+
+      // TODO: Optionally notify customer about expired session
+      // Could send email reminder with cart recovery link
+      break;
+
+    case "payment_intent.payment_failed":
+      const failedPayment = event.data.object as Stripe.PaymentIntent;
+      console.log("Payment failed:", {
+        id: failedPayment.id,
+        amount: failedPayment.amount,
+        currency: failedPayment.currency,
+        lastPaymentError: failedPayment.last_payment_error,
+      });
+
+      // TODO: Handle failed payment
+      // 1. Log the failure reason
+      // 2. Send notification to customer with retry options
+      // 3. Update analytics/metrics
+      // 4. Possibly send to admin for review if frequent failures
+      break;
+
+    case "payment_intent.requires_action":
+      const actionRequired = event.data.object as Stripe.PaymentIntent;
+      console.log("Payment requires additional action:", actionRequired.id);
+
+      // This is typically handled automatically by Stripe's frontend
+      // but you might want to log it for analytics
+      break;
+
     default:
       console.log(`Unhandled event type: ${event.type}`);
   }
