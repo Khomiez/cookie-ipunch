@@ -3,89 +3,116 @@ import { NextRequest, NextResponse } from "next/server";
 import stripe from "@/lib/stripe-server";
 import connectToDatabase from "@/lib/mongodb";
 import Order, { IOrder, IOrderItem, ICustomerDetails } from "@/models/Order";
-import { headers } from "next/headers";
 import Stripe from "stripe";
 
+// Disable body parsing, need raw body for Stripe webhook
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export async function POST(request: NextRequest) {
-  const body = await request.text();
-  const headersList = await headers();
-  const signature = headersList.get("stripe-signature")!;
-
-  let event;
-
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err);
+    const rawBody = await request.text();
+    const signature = request.headers.get("stripe-signature");
+
+    if (!signature) {
+      return NextResponse.json(
+        { error: "No Stripe signature found" },
+        { status: 400 }
+      );
+    }
+
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      return NextResponse.json(
+        { error: "Webhook secret not configured" },
+        { status: 500 }
+      );
+    }
+
+    let stripeEvent;
+    try {
+      stripeEvent = stripe.webhooks.constructEvent(
+        rawBody,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err);
+      return NextResponse.json(
+        { error: "Webhook signature verification failed" },
+        { status: 400 }
+      );
+    }
+
+    // Connect to database
+    try {
+      await connectToDatabase();
+    } catch (error) {
+      console.error("MongoDB connection failed:", error);
+      return NextResponse.json(
+        { error: "Database connection failed" },
+        { status: 500 }
+      );
+    }
+
+    // Handle the event
+    switch (stripeEvent.type) {
+      case "checkout.session.completed":
+        const session = stripeEvent.data.object as Stripe.Checkout.Session;
+        
+        try {
+          const sessionWithLineItems = await stripe.checkout.sessions.retrieve(
+            session.id,
+            { expand: ["line_items.data.price.product"] }
+          );
+
+          const orderData = await parseStripeSession(sessionWithLineItems);
+          const newOrder = new Order({
+            ...orderData,
+            orderId: `FS${new Date().toISOString().slice(2, 10).replace(/-/g, "")}001`
+          });
+          await newOrder.save();
+          
+          // TODO: Send confirmation email
+          // TODO: Send notification to admin
+        } catch (error) {
+          console.error("Error processing completed session:", error);
+          // Don't return error to Stripe - log for manual review
+        }
+        break;
+
+      case "payment_intent.payment_failed":
+        const failedPayment = stripeEvent.data.object as Stripe.PaymentIntent;
+        console.error("Payment failed:", {
+          id: failedPayment.id,
+          amount: failedPayment.amount,
+          currency: failedPayment.currency,
+          lastPaymentError: failedPayment.last_payment_error,
+        });
+        // TODO: Update order status if exists
+        // TODO: Send notification to customer
+        break;
+
+      case "checkout.session.expired":
+        const expiredSession = stripeEvent.data.object as Stripe.Checkout.Session;
+        console.log("Checkout session expired:", expiredSession.id);
+        // TODO: Optionally clean up or notify
+        break;
+
+      default:
+        console.log(`Unhandled event type: ${stripeEvent.type}`);
+    }
+
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error("Error processing webhook:", error);
     return NextResponse.json(
-      { error: "Webhook signature verification failed" },
-      { status: 400 }
+      { error: "Error processing webhook" },
+      { status: 500 }
     );
   }
-
-  // Connect to database
-  await connectToDatabase();
-
-  // Handle the event
-  switch (event.type) {
-    case "checkout.session.completed":
-      const session = event.data.object as Stripe.Checkout.Session;
-      console.log("🎉 Payment succeeded:", session.id);
-
-      try {
-        // Get session details with line items
-        const sessionWithLineItems = await stripe.checkout.sessions.retrieve(
-          session.id,
-          { expand: ["line_items.data.price.product"] }
-        );
-
-        // Parse the order data
-        const orderData = await parseStripeSession(sessionWithLineItems);
-        
-        // Save order to MongoDB
-        const newOrder = new Order(orderData);
-        await newOrder.save();
-
-        console.log("✅ Order saved to database:", newOrder.orderId);
-
-        // TODO: Send confirmation email
-        // TODO: Send notification to admin
-        
-      } catch (error) {
-        console.error("❌ Error processing completed session:", error);
-        // Don't return error to Stripe - log for manual review
-      }
-
-      break;
-
-    case "payment_intent.payment_failed":
-      const failedPayment = event.data.object as Stripe.PaymentIntent;
-      console.log("❌ Payment failed:", {
-        id: failedPayment.id,
-        amount: failedPayment.amount,
-        currency: failedPayment.currency,
-        lastPaymentError: failedPayment.last_payment_error,
-      });
-
-      // TODO: Update order status if exists
-      // TODO: Send notification to customer
-      break;
-
-    case "checkout.session.expired":
-      const expiredSession = event.data.object as Stripe.Checkout.Session;
-      console.log("⏰ Checkout session expired:", expiredSession.id);
-      // TODO: Optionally clean up or notify
-      break;
-
-    default:
-      console.log(`Unhandled event type: ${event.type}`);
-  }
-
-  return NextResponse.json({ received: true });
 }
 
 // Helper function to parse Stripe session data into our order format
@@ -114,7 +141,6 @@ async function parseStripeSession(session: Stripe.Checkout.Session): Promise<Par
       country: session.customer_details.address.country || 'TH',
     };
   }
-  // For pickup orders, no address is needed or stored
 
   // Parse order items
   const items: IOrderItem[] = [];
@@ -149,7 +175,7 @@ async function parseStripeSession(session: Stripe.Checkout.Session): Promise<Par
   // Calculate delivery date (Friday delivery as per your business model)
   const deliveryDate = getNextDeliveryDate();
 
-  const orderData: Partial<IOrder> = {
+  return {
     stripeSessionId: session.id,
     stripePaymentIntentId: session.payment_intent as string,
     customerDetails,
@@ -164,8 +190,6 @@ async function parseStripeSession(session: Stripe.Checkout.Session): Promise<Par
     source: session.metadata?.source || 'fatsprinkle_website',
     orderType: session.metadata?.order_type || 'pre_order',
   };
-
-  return orderData;
 }
 
 // Helper function to calculate next delivery date (Friday)

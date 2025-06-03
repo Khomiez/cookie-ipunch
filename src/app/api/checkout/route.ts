@@ -6,9 +6,6 @@ import { CartItem } from "@/store/slices/cartSlice";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("=== CHECKOUT API STARTED ===");
-
-    // Step 1: Parse request body
     const {
       items,
       deliveryMethod,
@@ -17,54 +14,43 @@ export async function POST(request: NextRequest) {
       deliveryMethod: "shipping" | "pickup";
     } = await request.json();
 
-    console.log("Received items:", items?.length || 0);
-
-    // Step 2: Validate input
+    // Validate input
     if (!items || items.length === 0) {
-      console.error("❌ No items in cart");
       return NextResponse.json({ error: "No items in cart" }, { status: 400 });
     }
 
     if (!deliveryMethod) {
-      console.error("❌ Delivery method not selected");
       return NextResponse.json(
         { error: "Please select a delivery method" },
         { status: 400 }
       );
     }
 
-    // Step 3: Check Stripe initialization
+    // Check Stripe initialization
     if (!stripe) {
-      console.error("❌ Stripe not initialized");
       return NextResponse.json(
         { error: "Payment system not available" },
         { status: 500 }
       );
     }
 
-    // Step 4: Check environment variables
+    // Check environment variables
     if (!process.env.STRIPE_SECRET_KEY) {
-      console.error("❌ STRIPE_SECRET_KEY not found");
       return NextResponse.json(
         { error: "Payment configuration error" },
         { status: 500 }
       );
     }
 
-    // Step 5: Get domain with proper protocol handling
+    // Get domain with proper protocol handling
     const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
     const host = request.headers.get('host') || 'localhost:3000';
     const domain = process.env.NEXT_PUBLIC_DOMAIN || `${protocol}://${host}`;
-    
-    console.log("✅ Using domain:", domain);
 
-    // Step 6: Process line items
-    console.log("📦 Processing line items...");
+    // Process line items
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
     for (const item of items) {
-      console.log(`Processing: ${item.name} (ID: ${item.id})`);
-
       // Validate item
       if (!item.id || !item.name || !item.price || item.quantity <= 0) {
         throw new Error(`Invalid item: ${item.name || "Unknown"}`);
@@ -107,16 +93,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log(`✅ Created ${lineItems.length} line items`);
-
-    // Step 7: Configure payment methods
+    // Configure payment methods
     const paymentMethodTypes: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] =
       ["card", "promptpay"];
-
-    console.log(
-      "🔄 Creating Stripe checkout session with payment methods:",
-      paymentMethodTypes
-    );
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: paymentMethodTypes,
@@ -162,28 +141,14 @@ export async function POST(request: NextRequest) {
       ],
     };
 
-    console.log("Session params:", JSON.stringify(sessionParams, null, 2));
-
     const session = await stripe.checkout.sessions.create(sessionParams);
-
-    console.log("✅ Stripe session created:", session.id);
-    console.log("✅ Checkout URL:", session.url);
 
     return NextResponse.json({
       sessionId: session.id,
       url: session.url,
     });
   } catch (error) {
-    console.error("❌ CHECKOUT ERROR:", error);
-
-    // Detailed error logging
-    if (error instanceof Error) {
-      console.error("Error details:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack?.split("\n").slice(0, 5).join("\n"),
-      });
-    }
+    console.error("Checkout error:", error);
 
     // Return appropriate error response
     const isDev = process.env.NODE_ENV === "development";
