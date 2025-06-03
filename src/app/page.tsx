@@ -14,18 +14,20 @@ export default function Home() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#fefbdc" }}>
-      {/* Header */}
-      <Header />
+      {/* Events & News Section with ID for navigation */}
+      <section id="events" data-section="events">
+        {/* Header */}
+        <Header />
 
-      {/* Delivery Notification */}
-      <DeliveryNoti />
+        {/* Delivery Notification */}
+        <DeliveryNoti />
 
-      {/* Events & News Section */}
-      <EventsNewsSection />
+        <EventsNewsSection />
+      </section>
 
       {/* Hero Section */}
       <HeroSection />
-      
+
       {/* Filter Bar */}
       <div className="px-4 mb-6">
         <div className="max-w-md mx-auto flex items-center justify-between">
@@ -42,8 +44,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Product Grid */}
-      <ProductGrid setCookieNumber={setCookieNumber} />
+      {/* Product Grid Section with ID for navigation */}
+      <section id="products" data-section="products">
+        <ProductGrid setCookieNumber={setCookieNumber} />
+      </section>
 
       {/* Floating Cart Bar */}
       <FloatingCardBar />

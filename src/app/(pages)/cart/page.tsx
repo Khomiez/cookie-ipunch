@@ -285,7 +285,7 @@ export default function CartPage() {
 
       {/* Checkout Button */}
       <div
-        className="fixed bottom-0 left-0 right-0 p-2 z-40"
+        className="fixed bottom-0 left-0 right-0 p-2 z-40 backdrop-blur-xs"
       >
         <div className="max-w-md mx-auto space-y-3">
           <button
@@ -313,7 +313,7 @@ export default function CartPage() {
             style={{
               borderColor: "#7f6957",
               color: "#7f6957",
-              backgroundColor: "transparent",
+              backgroundColor: "#fefbdc",
             }}
           >
             Keep Shopping
