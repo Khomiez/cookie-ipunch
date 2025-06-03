@@ -147,7 +147,7 @@ export default function CartPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl font-bold comic-text" style={{ color: "#7f6957" }}>
-                Your cookies 🍪
+                Your order 📃
               </h2>
               <p className="text-sm opacity-75 comic-text" style={{ color: "#7f6957" }}>
                 {totalItems} {totalItems !== 1 ? 'cookies' : 'cookie'}
@@ -286,7 +286,6 @@ export default function CartPage() {
       {/* Checkout Button */}
       <div
         className="fixed bottom-0 left-0 right-0 p-2 z-40"
-        style={{ backgroundColor: "#fefbdc" }}
       >
         <div className="max-w-md mx-auto space-y-3">
           <button

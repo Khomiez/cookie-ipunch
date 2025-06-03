@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Calendar, Heart } from "lucide-react";
+import { X, Calendar, Heart, Star, Bell, ArrowRight } from "lucide-react";
 
 type NewsItem = {
   id: string;
@@ -13,43 +13,39 @@ type NewsItem = {
   category: "event" | "news" | "special";
 };
 
-// Mock data - replace with actual data source later
+// Mock data with better structure
 const mockNewsItems: NewsItem[] = [
   {
     id: "1",
-    title: "earthquake situation! ⚠️",
+    title: "Earthquake Situation Update ⚠️",
     image: "/events-and-news/earthquake.jpg",
     date: "March 25, 2025",
-    description:
-      "we are very sorry for the inconvenience caused. we are working on it and will be back soon.",
+    description: "We're working hard to get back to baking your favorite cookies. Thank you for your patience during this time. We'll update you as soon as we're ready to deliver sweet moments again! 🍪💕",
     category: "news",
   },
   {
     id: "2",
-    title: "Valentine's day Promotion 💖",
+    title: "Valentine's Sweet Treats 💖",
     image: "/events-and-news/valentine.jpg",
     date: "February 14, 2025",
-    description:
-      "Happy valentine's day",
+    description: "Love is in the air and in every bite! Special heart-shaped cookies and romantic gift packages available. Spread the sweetness with someone special! 💕🍪",
     category: "event",
   },
   {
     id: "3",
-    title: "line official account",
+    title: "Join Our LINE Family! 📱",
     image: "/events-and-news/lineoa.jpg",
-    date: "February 14, 2025",
-    description:
-      "join us",
+    date: "February 10, 2025",
+    description: "Get exclusive updates, special promotions, and be the first to know about new cookie flavors! Join our cozy LINE community today! 🌟",
     category: "special",
   },
   {
     id: "4",
-    title: "cosci festival",
+    title: "COSCI Festival Adventure 🎪",
     image: "/events-and-news/cosci.jpg",
     date: "March 20, 2025",
-    description:
-      "come see us",
-    category: "news",
+    description: "Come find us at the COSCI Festival! We'll be serving fresh cookies and spreading smiles. Don't miss our festival-exclusive flavors! 🎉🍪",
+    category: "event",
   },
 ];
 
@@ -57,15 +53,17 @@ type Props = {};
 
 const EventsNewsSection = (props: Props) => {
   const [selectedItem, setSelectedItem] = useState<NewsItem | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
-  // Add useEffect to handle body scroll
+  // Show only 2 items initially
+  const displayedItems = showAll ? mockNewsItems : mockNewsItems.slice(0, 2);
+
   useEffect(() => {
     if (selectedItem) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
-    // Cleanup function
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -74,134 +72,196 @@ const EventsNewsSection = (props: Props) => {
   const getCategoryIcon = (category: NewsItem["category"]) => {
     switch (category) {
       case "event":
-        return <Calendar size={16} style={{ color: "#7f6957" }} />;
+        return <Calendar size={14} style={{ color: "#7f6957" }} />;
       case "special":
-        return <Heart size={16} style={{ color: "#7f6957" }} />;
+        return <Star size={14} style={{ color: "#7f6957" }} />;
+      case "news":
+        return <Bell size={14} style={{ color: "#7f6957" }} />;
       default:
-        return null;
+        return <Bell size={14} style={{ color: "#7f6957" }} />;
     }
   };
 
-  const getCategoryColor = (category: NewsItem["category"]) => {
+  const getCategoryStyle = (category: NewsItem["category"]) => {
     switch (category) {
       case "event":
-        return "#eaf7ff";
+        return {
+          backgroundColor: "#eaf7ff",
+          borderColor: "#7f6957",
+        };
       case "special":
-        return "#fee2e2";
+        return {
+          backgroundColor: "#fef3c7",
+          borderColor: "#d97706",
+        };
       case "news":
-        return "#f0fdf4";
+        return {
+          backgroundColor: "#f0f9ff",
+          borderColor: "#0369a1",
+        };
       default:
-        return "#eaf7ff";
+        return {
+          backgroundColor: "#eaf7ff",
+          borderColor: "#7f6957",
+        };
     }
+  };
+
+  const formatDescription = (description: string, maxLength: number = 60) => {
+    if (description.length <= maxLength) return description;
+    return description.substring(0, maxLength) + "...";
   };
 
   return (
     <>
-      <div className="px-4 mb-8">
+      <div className="px-4 mb-6">
         <div className="max-w-md mx-auto">
-          {/* Section Header */}
-          <div className="text-center mb-6">
+          {/* Minimal Header */}
+          <div className="text-center mb-5">
             <h2
-              className="text-2xl font-bold mb-2 comic-text"
+              className="text-xl font-bold mb-2 comic-text"
               style={{ color: "#7f6957" }}
             >
-              Events & News 📰
+              What's New? ✨
             </h2>
-            <div className="flex justify-center items-center space-x-2 mb-3">
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: "#7f6957" }}
-              ></div>
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: "#eaf7ff" }}
-              ></div>
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: "#7f6957" }}
-              ></div>
-            </div>
             <p
-              className="text-sm opacity-80 comic-text"
+              className="text-sm opacity-70 comic-text"
               style={{ color: "#7f6957" }}
             >
-              Stay updated with our latest happenings! ✨
+              Stay in the loop with our sweet updates
             </p>
           </div>
 
-          {/* News Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {mockNewsItems.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => setSelectedItem(item)}
-                className="bg-white rounded-2xl overflow-hidden shadow-lg cursor-pointer transform hover:scale-105 transition-transform relative"
-              >
-                {/* Category Badge */}
+          {/* News Cards - Stacked Design */}
+          <div className="space-y-3">
+            {displayedItems.map((item, index) => {
+              const categoryStyle = getCategoryStyle(item.category);
+              
+              return (
                 <div
-                  className="absolute top-2 left-2 z-10 px-2 py-1 rounded-full flex items-center space-x-1"
-                  style={{ backgroundColor: getCategoryColor(item.category) }}
+                  key={item.id}
+                  onClick={() => setSelectedItem(item)}
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer transform hover:scale-[1.02] transition-all duration-200 relative"
+                  style={{ 
+                    boxShadow: "0 2px 12px rgba(127, 105, 87, 0.08)"
+                  }}
                 >
-                  {getCategoryIcon(item.category)}
-                  <span
-                    className="text-xs font-bold comic-text capitalize"
-                    style={{ color: "#7f6957" }}
-                  >
-                    {item.category}
-                  </span>
-                </div>
+                  <div className="flex items-center p-4">
+                    {/* Image */}
+                    <div 
+                      className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4"
+                      style={{ backgroundColor: "#fefbdc" }}
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
 
-                {/* Image */}
-                <div className="aspect-square w-full overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Category Badge */}
+                      <div className="flex items-center mb-2">
+                        <div
+                          className="inline-flex items-center space-x-1 px-2 py-1 rounded-full border"
+                          style={{
+                            backgroundColor: categoryStyle.backgroundColor,
+                            borderColor: categoryStyle.borderColor,
+                            borderWidth: "1px",
+                          }}
+                        >
+                          {getCategoryIcon(item.category)}
+                          <span
+                            className="text-xs font-medium comic-text capitalize"
+                            style={{ color: "#7f6957" }}
+                          >
+                            {item.category}
+                          </span>
+                        </div>
+                      </div>
 
-                {/* Content */}
-                <div className="p-3">
-                  <h3
-                    className="font-bold text-sm mb-1 comic-text line-clamp-2"
-                    style={{ color: "#7f6957" }}
-                  >
-                    {item.title}
-                  </h3>
-                  <p
-                    className="text-xs opacity-75 comic-text"
-                    style={{ color: "#7f6957" }}
-                  >
-                    {item.date}
-                  </p>
+                      {/* Title */}
+                      <h3
+                        className="font-bold text-sm mb-1 comic-text line-clamp-1"
+                        style={{ color: "#7f6957" }}
+                      >
+                        {item.title}
+                      </h3>
+
+                      {/* Description preview */}
+                      <p
+                        className="text-xs opacity-70 comic-text line-clamp-2 mb-1"
+                        style={{ color: "#7f6957" }}
+                      >
+                        {formatDescription(item.description)}
+                      </p>
+
+                      {/* Date */}
+                      <p
+                        className="text-xs opacity-50 comic-text"
+                        style={{ color: "#7f6957" }}
+                      >
+                        {item.date}
+                      </p>
+                    </div>
+
+                    {/* Arrow indicator */}
+                    <div className="ml-2">
+                      <ArrowRight 
+                        size={16} 
+                        className="opacity-40" 
+                        style={{ color: "#7f6957" }} 
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          {/* View All Button */}
-          <div className="text-center mt-6">
-            <button
-              className="px-6 py-3 rounded-full text-sm font-bold text-white transform hover:scale-105 transition-transform comic-text"
-              style={{ backgroundColor: "#7f6957" }}
-            >
-              View All Updates
-            </button>
-          </div>
+          {/* Show More/Less Button */}
+          {mockNewsItems.length > 2 && (
+            <div className="text-center mt-4">
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="no-hover px-4 py-2 rounded-full text-sm font-medium border-2 border-dashed comic-text"
+                style={{
+                  borderColor: "#7f6957",
+                  color: "#7f6957",
+                  backgroundColor: "transparent",
+                }}
+              >
+                {showAll ? "Show Less" : `View All (${mockNewsItems.length - 2} more)`}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Modal/Lightbox */}
+      {/* Enhanced Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 backdrop-blur-xs bg-white/30 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div
-            className="bg-white rounded-3xl max-w-sm w-full max-h-[90vh] overflow-y-auto relative"
-            style={{ backgroundColor: "#fefbdc" }}
+            className="bg-white rounded-3xl max-w-sm w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in duration-200 scrollbar-hide"
+            style={{ 
+              backgroundColor: "#fefbdc",
+              boxShadow: "0 20px 60px rgba(127, 105, 87, 0.2)",
+              scrollbarWidth: "none", /* Firefox */
+              msOverflowStyle: "none", /* IE and Edge */
+            }}
           >
+            {/* Hide scrollbar for Chrome, Safari and Opera */}
+            <style jsx global>{`
+              .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
+
             {/* Close Button */}
             <button
               onClick={() => setSelectedItem(null)}
-              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center no-hover"
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center no-hover shadow-lg"
               style={{ backgroundColor: "#7f6957" }}
             >
               <X size={20} className="text-white" />
@@ -209,12 +269,13 @@ const EventsNewsSection = (props: Props) => {
 
             {/* Content */}
             <div className="p-6">
-              {/* Category Badge */}
+              {/* Category Badge - Top Center */}
               <div className="flex justify-center mb-4">
                 <div
-                  className="px-4 py-2 rounded-full flex items-center space-x-2"
+                  className="px-4 py-2 rounded-full flex items-center space-x-2 border"
                   style={{
-                    backgroundColor: getCategoryColor(selectedItem.category),
+                    ...getCategoryStyle(selectedItem.category),
+                    borderWidth: "2px",
                   }}
                 >
                   {getCategoryIcon(selectedItem.category)}
@@ -228,7 +289,7 @@ const EventsNewsSection = (props: Props) => {
               </div>
 
               {/* Large Image */}
-              <div className="w-full aspect-square rounded-2xl overflow-hidden mb-6">
+              <div className="w-full aspect-square rounded-2xl overflow-hidden mb-5 shadow-lg">
                 <img
                   src={selectedItem.image}
                   alt={selectedItem.title}
@@ -238,15 +299,20 @@ const EventsNewsSection = (props: Props) => {
 
               {/* Title */}
               <h2
-                className="text-xl font-bold mb-3 comic-text text-center"
+                className="text-xl font-bold mb-3 comic-text text-center leading-tight"
                 style={{ color: "#7f6957" }}
               >
                 {selectedItem.title}
               </h2>
 
-              {/* Date */}
+              {/* Date with icon */}
               <div className="flex items-center justify-center space-x-2 mb-4">
-                <Calendar size={16} style={{ color: "#7f6957" }} />
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: "#eaf7ff" }}
+                >
+                  <Calendar size={14} style={{ color: "#7f6957" }} />
+                </div>
                 <p
                   className="text-sm font-medium comic-text"
                   style={{ color: "#7f6957" }}
@@ -256,22 +322,40 @@ const EventsNewsSection = (props: Props) => {
               </div>
 
               {/* Description */}
-              <p
-                className="text-base leading-relaxed text-center comic-text"
-                style={{ color: "#7f6957" }}
+              <div 
+                className="bg-white rounded-2xl p-4 mb-6 shadow-sm"
+                style={{ backgroundColor: "rgba(255, 255, 255, 0.7)" }}
               >
-                {selectedItem.description}
-              </p>
+                <p
+                  className="text-base leading-relaxed comic-text text-center"
+                  style={{ color: "#7f6957" }}
+                >
+                  {selectedItem.description}
+                </p>
+              </div>
 
-              {/* Action Button */}
-              <div className="mt-6 text-center">
+              {/* Action Buttons */}
+              <div className="space-y-3">
                 <button
                   onClick={() => setSelectedItem(null)}
-                  className="px-8 py-3 rounded-full text-white font-bold transform hover:scale-105 transition-transform comic-text"
+                  className="w-full px-6 py-3 rounded-2xl text-white font-bold transform hover:scale-105 transition-transform comic-text shadow-lg"
                   style={{ backgroundColor: "#7f6957" }}
                 >
                   Got it! 👍
                 </button>
+                
+                {selectedItem.category === "special" && (
+                  <button
+                    onClick={() => {
+                      // Handle special action (e.g., open LINE, navigate to promotion)
+                      setSelectedItem(null);
+                    }}
+                    className="no-hover text-sm font-medium hover:opacity-80 transition-opacity"
+                    style={{ color: "#7f6957" }}
+                  >
+                    Learn more →
+                  </button>
+                )}
               </div>
             </div>
           </div>
