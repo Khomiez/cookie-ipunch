@@ -1,27 +1,31 @@
+// src/app/page.tsx
 "use client";
 import { ShoppingBag, Filter, Menu } from "lucide-react";
 import ProductGrid from "@/components/product/ProductGrid";
 import FloatingCardBar from "@/components/cart/FloatingCardBar";
 import DeliveryNoti from "@/components/notification/DeliveryNoti";
-import {Header} from "@/components/common";
+import { Header } from "@/components/common";
 import HeroSection from "@/components/common/HeroSection";
+import EventsNewsSection from "@/components/events/EventsNewsSection";
 import { useState } from "react";
 
 export default function Home() {
-
   const [cookieNumber, setCookieNumber] = useState(0);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#fefbdc" }}>
       {/* Header */}
-      <Header/>
+      <Header />
 
       {/* Delivery Notification */}
       <DeliveryNoti />
 
-      {/* Hero Section */}
-      <HeroSection/>
+      {/* Events & News Section */}
+      <EventsNewsSection />
 
+      {/* Hero Section */}
+      <HeroSection />
+      
       {/* Filter Bar */}
       <div className="px-4 mb-6">
         <div className="max-w-md mx-auto flex items-center justify-between">
