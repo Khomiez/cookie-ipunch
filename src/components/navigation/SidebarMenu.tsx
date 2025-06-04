@@ -11,10 +11,17 @@ interface SidebarMenuProps {
 }
 
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ isOpen, onClose }) => {
+  const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     if (isOpen) {
       setIsVisible(true);
       document.body.style.overflow = 'hidden';
@@ -28,7 +35,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ isOpen, onClose }) => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen]);
+  }, [isOpen, mounted]);
+
+  // Don't render anything until after hydration
+  if (!mounted) {
+    return null;
+  }
 
   const scrollToSection = (sectionId: string) => {
     // First navigate to home page

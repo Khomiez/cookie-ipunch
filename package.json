@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "create-admin": "ts-node src/scripts/createAdmin.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
@@ -22,7 +23,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-redux": "^9.2.0",
-    "stripe": "^18.2.0"
+    "stripe": "^18.2.0",
+    "zod": "^3.25.51"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

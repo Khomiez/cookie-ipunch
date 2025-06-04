@@ -32,6 +32,13 @@ export interface IAdmin extends Document {
   isLocked(): boolean;
 }
 
+interface IAdminModel extends mongoose.Model<IAdmin> {
+  getAuthenticated(
+    username: string,
+    password: string
+  ): Promise<{ admin?: IAdmin; reason?: 'NOT_FOUND' | 'PASSWORD_INCORRECT' | 'MAX_ATTEMPTS' }>;
+}
+
 const AdminSchema: Schema = new Schema(
   {
     username: {
@@ -224,4 +231,4 @@ AdminSchema.index({ role: 1 });
 AdminSchema.index({ lockUntil: 1 });
 
 export default mongoose.models.Admin ||
-  mongoose.model<IAdmin>("Admin", AdminSchema);
+  mongoose.model<IAdmin, IAdminModel>("Admin", AdminSchema);

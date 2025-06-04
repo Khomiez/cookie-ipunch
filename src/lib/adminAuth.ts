@@ -1,7 +1,6 @@
-// src/lib/adminAuth.ts - Helper functions for admin authentication
 import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
-import Admin from "@/models/Admin";
+import { cookies, headers } from "next/headers";
+import Admin, { IAdmin } from "@/models/Admin";
 import connectToDatabase from "./mongodb";
 
 export interface AdminSession {
@@ -20,6 +19,15 @@ export interface AdminSession {
 
 export async function getAdminSession(): Promise<AdminSession | null> {
   try {
+    // Try to get from headers first (set by middleware for API routes)
+    const headersList = await headers();
+    const sessionHeader = headersList.get("x-admin-session");
+
+    if (sessionHeader) {
+      return JSON.parse(sessionHeader);
+    }
+
+    // Fallback to cookie verification
     const cookieStore = await cookies();
     const token = cookieStore.get("fatsprinkle_admin_session")?.value;
 
@@ -32,9 +40,9 @@ export async function getAdminSession(): Promise<AdminSession | null> {
       process.env.JWT_SECRET || "fallback-secret-key"
     ) as AdminSession;
 
-    // Optionally verify admin still exists and is active
+    // Verify admin still exists and is active
     await connectToDatabase();
-    const admin = await Admin.findById(decoded.adminId);
+    const admin = await Admin.findById(decoded.adminId).lean() as (IAdmin & { _id: string }) | null;
 
     if (!admin || !admin.isActive) {
       return null;
@@ -60,4 +68,90 @@ export function hasPermission(
   permission: keyof AdminSession["permissions"]
 ): boolean {
   return session.role === "super_admin" || session.permissions[permission];
+}
+
+export async function requirePermission(
+  permission: keyof AdminSession["permissions"]
+): Promise<AdminSession> {
+  const session = await requireAdminAuth();
+
+  if (!hasPermission(session, permission)) {
+    throw new Error("Insufficient permissions");
+  }
+
+  return session;
+}
+
+// Audit logging for admin actions
+export async function logAdminAction(
+  adminId: string,
+  action: string,
+  resource: string,
+  resourceId?: string,
+  metadata?: any
+) {
+  try {
+    await connectToDatabase();
+
+    // You can create an AdminAuditLog model for this
+    console.log("Admin Action:", {
+      adminId,
+      action,
+      resource,
+      resourceId,
+      metadata,
+      timestamp: new Date().toISOString(),
+    });
+
+    // TODO: Implement actual audit logging to database
+  } catch (error) {
+    console.error("Failed to log admin action:", error);
+  }
+}
+
+// Rate limiting for admin actions
+const adminActionLimits = new Map<
+  string,
+  { count: number; resetTime: number }
+>();
+
+export function checkAdminRateLimit(
+  adminId: string,
+  action: string,
+  maxAttempts: number = 100,
+  windowMs: number = 60000 // 1 minute
+): { allowed: boolean; remaining: number; resetTime: number } {
+  const key = `${adminId}:${action}`;
+  const now = Date.now();
+  const current = adminActionLimits.get(key);
+
+  if (!current || now > current.resetTime) {
+    const newLimit = {
+      count: 1,
+      resetTime: now + windowMs,
+    };
+    adminActionLimits.set(key, newLimit);
+    return {
+      allowed: true,
+      remaining: maxAttempts - 1,
+      resetTime: newLimit.resetTime,
+    };
+  }
+
+  if (current.count >= maxAttempts) {
+    return {
+      allowed: false,
+      remaining: 0,
+      resetTime: current.resetTime,
+    };
+  }
+
+  current.count++;
+  adminActionLimits.set(key, current);
+
+  return {
+    allowed: true,
+    remaining: maxAttempts - current.count,
+    resetTime: current.resetTime,
+  };
 }

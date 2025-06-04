@@ -16,11 +16,11 @@ type Props = {
 
 const Header = ({ showBackButton = false, onBackClick, title }: Props) => {
   const { totalItems } = useAppSelector((state) => state.cart);
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
   const handleMenuClick = () => {
@@ -30,6 +30,11 @@ const Header = ({ showBackButton = false, onBackClick, title }: Props) => {
   const handleCloseSidebar = () => {
     setIsSidebarOpen(false);
   };
+
+  // Don't render anything until after hydration
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <>
@@ -80,7 +85,7 @@ const Header = ({ showBackButton = false, onBackClick, title }: Props) => {
           </div>
 
           <div className="flex items-center space-x-4">
-            {isClient && (
+            {mounted && (
               <Link href="/cart" className="relative">
                 <ShoppingBag size={24} style={{ color: "#7f6957" }} />
                 {totalItems > 0 && (

@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import connectToDatabase from "@/lib/mongodb";
 import Admin from "@/models/Admin";
-import jwt from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
+
+const JWT_SECRET: Secret = process.env.JWT_SECRET as Secret;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set');
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,6 +38,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!result.admin) {
+      return NextResponse.json(
+        { error: "Login failed" },
+        { status: 401 }
+      );
+    }
+
     const admin = result.admin;
 
     // Create JWT token
@@ -43,7 +55,7 @@ export async function POST(request: NextRequest) {
         role: admin.role,
         permissions: admin.permissions
       },
-      process.env.JWT_SECRET || 'fallback-secret-key',
+      JWT_SECRET,
       { expiresIn: '24h' }
     );
 
@@ -74,7 +86,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
-      { error: "Login failed" },
+      { error: "An unexpected error occurred" },
       { status: 500 }
     );
   }

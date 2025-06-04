@@ -10,15 +10,19 @@ type Props = {};
 
 const FloatingCardBar = (props: Props) => {
   const { totalItems, totalPrice } = useAppSelector(state => state.cart);
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Ensure hydration consistency
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
-  // Don't show anything during SSR or if there are no items after hydration
-  if (!isClient || totalItems === 0) {
+  // Don't render anything until after hydration
+  if (!mounted) {
+    return null;
+  }
+
+  // Don't show if there are no items
+  if (totalItems === 0) {
     return null;
   }
 

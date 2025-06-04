@@ -21,10 +21,10 @@ export default function SuccessPage() {
   const dispatch = useAppDispatch();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function SuccessPage() {
   }, [searchParams, dispatch]);
 
   useEffect(() => {
-    if (!isClient) return;
+    if (!mounted) return;
 
     // Confetti animation
     const defaults = {
@@ -77,7 +77,7 @@ export default function SuccessPage() {
     setTimeout(shoot, 0);
     setTimeout(shoot, 100);
     setTimeout(shoot, 200);
-  }, [isClient]);
+  }, [mounted]);
 
   const handleBackClick = () => {
     router.push("/");
