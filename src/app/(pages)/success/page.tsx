@@ -21,6 +21,11 @@ export default function SuccessPage() {
   const dispatch = useAppDispatch();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const session_id = searchParams.get("session_id");
@@ -30,6 +35,10 @@ export default function SuccessPage() {
       dispatch(clearCart());
     }
     setIsLoading(false);
+  }, [searchParams, dispatch]);
+
+  useEffect(() => {
+    if (!isClient) return;
 
     // Confetti animation
     const defaults = {
@@ -42,7 +51,7 @@ export default function SuccessPage() {
     };
 
     function shoot() {
-      if (typeof window !== "undefined" && window.confetti) {
+      if (window.confetti) {
         window.confetti({
           ...defaults,
           particleCount: 30,
@@ -68,7 +77,7 @@ export default function SuccessPage() {
     setTimeout(shoot, 0);
     setTimeout(shoot, 100);
     setTimeout(shoot, 200);
-  }, [searchParams, dispatch]);
+  }, [isClient]);
 
   const handleBackClick = () => {
     router.push("/");

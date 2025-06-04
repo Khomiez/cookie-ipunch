@@ -22,33 +22,29 @@ const initialState: CartState = {
 
 // Load cart from localStorage
 const loadCartFromStorage = (): CartState => {
-  if (typeof window !== 'undefined') {
-    try {
-      const savedCart = localStorage.getItem('fatsprinkle_cart');
-      if (savedCart) {
-        const parsedCart = JSON.parse(savedCart);
-        return {
-          ...parsedCart,
-          isHydrated: true,
-        };
-      }
-    } catch (error) {
-      console.error('Error loading cart from localStorage:', error);
+  try {
+    const savedCart = localStorage.getItem('fatsprinkle_cart');
+    if (savedCart) {
+      const parsedCart = JSON.parse(savedCart);
+      return {
+        ...parsedCart,
+        isHydrated: true,
+      };
     }
+  } catch (error) {
+    console.error('Error loading cart from localStorage:', error);
   }
   return initialState;
 };
 
 // Save cart to localStorage
 const saveCartToStorage = (state: CartState) => {
-  if (typeof window !== 'undefined') {
-    try {
-      // Don't save the isHydrated flag to localStorage
-      const { isHydrated, ...cartToSave } = state;
-      localStorage.setItem('fatsprinkle_cart', JSON.stringify(cartToSave));
-    } catch (error) {
-      console.error('Error saving cart to localStorage:', error);
-    }
+  try {
+    // Don't save the isHydrated flag to localStorage
+    const { isHydrated, ...cartToSave } = state;
+    localStorage.setItem('fatsprinkle_cart', JSON.stringify(cartToSave));
+  } catch (error) {
+    console.error('Error saving cart to localStorage:', error);
   }
 };
 
@@ -66,13 +62,11 @@ const cartSlice = createSlice({
   reducers: {
     // Initialize cart from localStorage (called after hydration)
     initializeCart: (state) => {
-      if (typeof window !== 'undefined') {
-        const savedState = loadCartFromStorage();
-        state.items = savedState.items;
-        state.totalItems = savedState.totalItems;
-        state.totalPrice = savedState.totalPrice;
-        state.isHydrated = true;
-      }
+      const savedState = loadCartFromStorage();
+      state.items = savedState.items;
+      state.totalItems = savedState.totalItems;
+      state.totalPrice = savedState.totalPrice;
+      state.isHydrated = true;
     },
 
     addToCart: (state, action: PayloadAction<IProduct>) => {

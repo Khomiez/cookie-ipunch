@@ -19,7 +19,6 @@ const Header = ({ showBackButton = false, onBackClick, title }: Props) => {
   const [isClient, setIsClient] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Ensure hydration consistency
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -73,40 +72,34 @@ const Header = ({ showBackButton = false, onBackClick, title }: Props) => {
                 />
               </div>
             )}
-
-            <h1
-              className="text-xl font-bold comic-text"
-              style={{ color: "#7f6957" }}
-            >
-              {title || "fatsprinkle.co"}
-            </h1>
+            {title && (
+              <h1 className="text-lg font-medium" style={{ color: "#7f6957" }}>
+                {title}
+              </h1>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">
-            <Link href="/cart" className="relative">
-              <ShoppingBag size={24} style={{ color: "#7f6957" }} />
-              {/* Only render badge after client hydration and when there are items */}
-              {isClient && totalItems > 0 && (
-                <span
-                  className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-xs text-white flex items-center justify-center font-bold"
-                  style={{ backgroundColor: "#7f6957" }}
-                >
-                  {totalItems}
-                </span>
-              )}
-            </Link>
-            <button 
-              onClick={handleMenuClick}
-              className="no-hover transform hover:scale-105 transition-transform"
-              aria-label="Open menu"
-            >
-              <Menu size={28} style={{ color: "#7f6957" }} />
+            {isClient && (
+              <Link href="/cart" className="relative">
+                <ShoppingBag size={24} style={{ color: "#7f6957" }} />
+                {totalItems > 0 && (
+                  <span
+                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium"
+                    style={{ backgroundColor: "#7f6957", color: "#fefbdc" }}
+                  >
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+            )}
+            <button onClick={handleMenuClick} className="no-hover">
+              <Menu size={24} style={{ color: "#7f6957" }} />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Sidebar Menu */}
       <SidebarMenu isOpen={isSidebarOpen} onClose={handleCloseSidebar} />
     </>
   );
