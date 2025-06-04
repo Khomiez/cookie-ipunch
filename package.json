@@ -11,6 +11,10 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
     "@stripe/stripe-js": "^7.3.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.9",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.511.0",
     "mongodb": "^6.16.0",
     "mongoose": "^8.15.1",

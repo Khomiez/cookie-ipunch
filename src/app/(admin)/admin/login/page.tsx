@@ -179,23 +179,6 @@ export default function AdminLoginPage() {
               )}
             </button>
           </div>
-
-          {/* Test Credentials */}
-          <div 
-            className="mt-6 p-4 rounded-xl border border-dashed"
-            style={{ 
-              backgroundColor: "#eaf7ff", 
-              borderColor: "#7f6957"
-            }}
-          >
-            <h3 className="text-sm font-bold mb-2 comic-text" style={{ color: "#7f6957" }}>
-              Test Credentials:
-            </h3>
-            <div className="text-sm space-y-1 comic-text" style={{ color: "#7f6957" }}>
-              <p><strong>Username:</strong> admin</p>
-              <p><strong>Password:</strong> fatsprinkle2025</p>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
