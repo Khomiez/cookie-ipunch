@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Lock, User, Shield } from "lucide-react";
+import { Eye, EyeOff, Lock, User, Cookie, Heart } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -75,62 +75,97 @@ export default function AdminLoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-6 py-12"
-      style={{ backgroundColor: "#fefbdc" }}
+      className="min-h-screen flex items-center justify-center px-6 py-12 relative overflow-hidden"
+      style={{ backgroundColor: "#f8f6f0" }} // Softer background
     >
-      <div className="w-full max-w-md">
+      {/* Decorative Elements */}
+      <div className="absolute top-10 left-10 opacity-20">
+        <Cookie size={60} style={{ color: "#7f6957" }} />
+      </div>
+      <div className="absolute bottom-10 right-10 opacity-20">
+        <Heart size={40} style={{ color: "#7f6957" }} />
+      </div>
+      <div className="absolute top-1/4 right-20 opacity-10">
+        <div
+          className="w-32 h-32 rounded-full"
+          style={{ backgroundColor: "#eaf7ff" }}
+        />
+      </div>
+      <div className="absolute bottom-1/4 left-20 opacity-10">
+        <div
+          className="w-24 h-24 rounded-full"
+          style={{ backgroundColor: "#fef3c7" }}
+        />
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-6">
             <div
-              className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg"
-              style={{ backgroundColor: "#7f6957" }}
+              className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg relative"
+              style={{ 
+                backgroundColor: "#7f6957",
+                boxShadow: "0 8px 30px rgba(127, 105, 87, 0.2)"
+              }}
             >
-              <Shield size={32} className="text-white" />
+              <Cookie size={36} className="text-white" />
+              <div 
+                className="absolute -top-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: "#eaf7ff" }}
+              >
+                <span className="text-xs">✨</span>
+              </div>
             </div>
           </div>
           <h1
-            className="text-3xl font-bold mb-2 comic-text"
+            className="text-2xl font-bold mb-3 comic-text"
             style={{ color: "#7f6957" }}
           >
-            Admin Portal
+            Welcome Back! 👋
           </h1>
           <p
-            className="text-lg opacity-75 comic-text"
+            className="text-base opacity-80 comic-text leading-relaxed"
             style={{ color: "#7f6957" }}
           >
-            Welcome back to fatsprinkle.co
+            Let's manage your sweet cookie empire
           </p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-white/50">
+        <div 
+          className="rounded-3xl shadow-xl p-8 backdrop-blur-sm border border-white/30"
+          style={{ 
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            boxShadow: "0 20px 60px rgba(127, 105, 87, 0.1)"
+          }}
+        >
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Username Field */}
             <div>
               <label
                 htmlFor="username"
-                className="block text-sm font-bold mb-2 comic-text"
+                className="text-sm font-medium mb-3 comic-text flex items-center space-x-2"
                 style={{ color: "#7f6957" }}
               >
-                Username
+                <User size={16} />
+                <span>Username</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User
-                    size={20}
-                    style={{ color: "#7f6957" }}
-                    className="opacity-50"
-                  />
-                </div>
                 <input
                   type="text"
                   id="username"
                   name="username"
                   value={formData.username}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#7f6957] focus:outline-none transition-colors comic-text"
-                  style={{ backgroundColor: "#fefbdc" }}
+                  className="w-full px-4 py-3 border-2 rounded-2xl focus:outline-none transition-all comic-text placeholder:opacity-60"
+                  style={{ 
+                    backgroundColor: "#fefbdc", 
+                    borderColor: "#e5e7eb",
+                    color: "#7f6957"
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = "#7f6957"}
+                  onBlur={(e) => e.target.style.borderColor = "#e5e7eb"}
                   placeholder="Enter your username"
                   required
                 />
@@ -141,47 +176,39 @@ export default function AdminLoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-bold mb-2 comic-text"
+                className="text-sm font-medium mb-3 comic-text flex items-center space-x-2"
                 style={{ color: "#7f6957" }}
               >
-                Password
+                <Lock size={16} />
+                <span>Password</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock
-                    size={20}
-                    style={{ color: "#7f6957" }}
-                    className="opacity-50"
-                  />
-                </div>
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-[#7f6957] focus:outline-none transition-colors comic-text"
-                  style={{ backgroundColor: "#fefbdc" }}
+                  className="w-full px-4 py-3 pr-12 border-2 rounded-2xl focus:outline-none transition-all comic-text placeholder:opacity-60"
+                  style={{ 
+                    backgroundColor: "#fefbdc", 
+                    borderColor: "#e5e7eb",
+                    color: "#7f6957"
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = "#7f6957"}
+                  onBlur={(e) => e.target.style.borderColor = "#e5e7eb"}
                   placeholder="Enter your password"
                   required
                 />
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center hover:opacity-80 transition-opacity"
                 >
                   {showPassword ? (
-                    <EyeOff
-                      size={20}
-                      style={{ color: "#7f6957" }}
-                      className="opacity-50 hover:opacity-75"
-                    />
+                    <EyeOff size={18} style={{ color: "#7f6957" }} className="opacity-60" />
                   ) : (
-                    <Eye
-                      size={20}
-                      style={{ color: "#7f6957" }}
-                      className="opacity-50 hover:opacity-75"
-                    />
+                    <Eye size={18} style={{ color: "#7f6957" }} className="opacity-60" />
                   )}
                 </button>
               </div>
@@ -189,9 +216,16 @@ export default function AdminLoginPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                <p className="text-red-600 text-sm comic-text text-center">
-                  {error}
+              <div 
+                className="rounded-2xl p-4 border"
+                style={{ 
+                  backgroundColor: "#fef2f2", 
+                  borderColor: "#fecaca"
+                }}
+              >
+                <p className="text-red-600 text-sm comic-text text-center flex items-center justify-center space-x-2">
+                  <span>⚠️</span>
+                  <span>{error}</span>
                 </p>
               </div>
             )}
@@ -200,42 +234,60 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl text-white font-bold text-lg transform hover:scale-105 transition-all disabled:opacity-50 disabled:transform-none comic-text shadow-lg"
-              style={{ backgroundColor: "#7f6957" }}
+              className="w-full py-4 rounded-2xl text-white font-medium text-lg transform hover:scale-105 transition-all disabled:opacity-50 disabled:transform-none comic-text shadow-lg"
+              style={{ 
+                backgroundColor: "#7f6957",
+                boxShadow: "0 8px 30px rgba(127, 105, 87, 0.3)"
+              }}
             >
               {isLoading ? (
-                <div className="flex items-center justify-center space-x-2">
+                <div className="flex items-center justify-center space-x-3">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   <span>Signing in...</span>
                 </div>
               ) : (
-                "Sign In"
+                <div className="flex items-center justify-center space-x-2">
+                  <span>Sign In</span>
+                  <span>🍪</span>
+                </div>
               )}
             </button>
           </form>
+
+          {/* Friendly Footer Message */}
+          <div className="text-center mt-6">
+            <p
+              className="text-sm opacity-70 comic-text"
+              style={{ color: "#7f6957" }}
+            >
+              Ready to bake some amazing experiences? ✨
+            </p>
+          </div>
         </div>
 
         {/* Footer with credentials hint for development */}
         <div className="text-center mt-8">
           <p
-            className="text-sm opacity-75 comic-text"
+            className="text-sm opacity-60 comic-text"
             style={{ color: "#7f6957" }}
           >
-            © 2025 fatsprinkle.co - Admin Dashboard
+            © 2025 fatsprinkle.co - Made with 💕
           </p>
           {process.env.NODE_ENV === "development" && (
-            <div className="mt-4 p-3 bg-white rounded-lg border border-gray-200">
+            <div 
+              className="mt-4 p-4 rounded-2xl border border-white/50 backdrop-blur-sm"
+              style={{ backgroundColor: "rgba(234, 247, 255, 0.8)" }}
+            >
               <p
-                className="text-xs font-bold mb-1"
+                className="text-sm font-medium mb-2 comic-text"
                 style={{ color: "#7f6957" }}
               >
-                Development Credentials:
+                🛠️ Development Mode
               </p>
-              <p className="text-xs opacity-75" style={{ color: "#7f6957" }}>
-                Username: judzuii
-                <br />
-                Password: devbyjudzuii
-              </p>
+              <div className="text-xs space-y-1 comic-text" style={{ color: "#7f6957" }}>
+                <p><strong>Username:</strong> judzuii</p>
+                <p><strong>Password:</strong> devbyjudzuii</p>
+              </div>
             </div>
           )}
         </div>
