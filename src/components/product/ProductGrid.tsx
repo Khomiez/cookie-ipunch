@@ -5,11 +5,14 @@ import React, { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import { IProduct } from "@/interfaces";
 
+type SortOption = "default" | "price_asc" | "price_desc";
+
 type Props = {
   setCookieNumber: (number: number) => void;
+  sortBy: SortOption;
 };
 
-const ProductGrid = ({ setCookieNumber }: Props) => {
+const ProductGrid = ({ setCookieNumber, sortBy }: Props) => {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +40,19 @@ const ProductGrid = ({ setCookieNumber }: Props) => {
 
     fetchProducts();
   }, []);
+
+  // Sort products based on the selected sort option
+  const sortedProducts = React.useMemo(() => {
+    const sorted = [...products];
+    switch (sortBy) {
+      case "price_asc":
+        return sorted.sort((a, b) => a.price - b.price);
+      case "price_desc":
+        return sorted.sort((a, b) => b.price - a.price);
+      default:
+        return sorted;
+    }
+  }, [products, sortBy]);
 
   if (loading) {
     return (
@@ -107,7 +123,7 @@ const ProductGrid = ({ setCookieNumber }: Props) => {
   return (
     <main className="px-4 pb-22">
       <div className="max-w-md mx-auto space-y-4">
-        {products.map((product) => (
+        {sortedProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
