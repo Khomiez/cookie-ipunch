@@ -1,4 +1,4 @@
-// src/app/(admin)/admin/dashboard/page.tsx - Updated with Status System
+// src/app/(admin)/admin/dashboard/page.tsx - Updated with Management Widgets
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -12,6 +12,11 @@ import {
   Cookie,
   Heart,
   LogOut,
+  Calendar,
+  Star,
+  ChevronRight,
+  Truck,
+  MessageSquare,
 } from "lucide-react";
 import { Order, OrderStatus } from "@/types/order";
 import BakingQueueSection from "@/components/admin/BakingQueueSection";
@@ -226,6 +231,31 @@ export default function AdminDashboard() {
       router.push("/admin/login");
     }
   };
+
+  // Quick actions data
+  const quickActions = [
+    {
+      title: "Manage Products",
+      description: "Add, edit, or remove cookies from your menu",
+      icon: Package,
+      bgColor: "#eaf7ff",
+      action: () => router.push("/admin/products"),
+    },
+    {
+      title: "Delivery Schedule",
+      description: "Plan your baking and delivery dates",
+      icon: Calendar,
+      bgColor: "#fef3c7",
+      action: () => console.log("Navigate to delivery schedule"),
+    },
+    {
+      title: "Customer Reviews",
+      description: "See what customers love about your cookies",
+      icon: Star,
+      bgColor: "#f0fdf4",
+      action: () => console.log("Navigate to customer reviews"),
+    },
+  ];
 
   if (!isAuthenticated) {
     return (
@@ -495,6 +525,42 @@ export default function AdminDashboard() {
           onOrderStatusChange={handleOrderStatusChange}
           onViewOrder={handleViewOrder}
         />
+
+        {/* Quick Action Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+          {quickActions.map((action, index) => (
+            <div
+              key={index}
+              className="rounded-2xl p-6 shadow-sm border border-white/50 hover:shadow-md transition-all cursor-pointer group"
+              style={{ backgroundColor: "rgba(255, 255, 255, 0.9)" }}
+              onClick={action.action}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform"
+                  style={{ backgroundColor: action.bgColor }}
+                >
+                  <action.icon size={24} style={{ color: "#7f6957" }} />
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ChevronRight size={20} style={{ color: "#7f6957" }} />
+                </div>
+              </div>
+              <h3
+                className="text-lg font-bold mb-2 comic-text"
+                style={{ color: "#7f6957" }}
+              >
+                {action.title}
+              </h3>
+              <p
+                className="text-sm opacity-75 comic-text"
+                style={{ color: "#7f6957" }}
+              >
+                {action.description}
+              </p>
+            </div>
+          ))}
+        </div>
       </main>
     </div>
   );
