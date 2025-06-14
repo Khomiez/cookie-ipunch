@@ -1,4 +1,4 @@
-// src/app/(admin)/admin/dashboard/page.tsx - Updated with Management Widgets
+// src/app/(admin)/admin/dashboard/page.tsx - Updated with New Workflow
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -19,8 +19,8 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { Order, OrderStatus } from "@/types/order";
-import BakingQueueSection from "@/components/admin/BakingQueueSection";
-import EnhancedOrdersTable from "@/components/admin/EnhancedOrdersTable";
+import BakingSummarySection from "@/components/admin/BakingSummarySection";
+import EnhancedOrdersTableUpdated from "@/components/admin/EnhancedOrdersTableUpdated";
 
 // Updated mock data with new status system
 const mockOrdersData: Order[] = [
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
     setIsAuthenticated(true);
   }, [router]);
 
-  // Handle order status changes
+  // Handle individual order status changes
   const handleOrderStatusChange = (orderId: string, newStatus: OrderStatus) => {
     setOrders((prev) =>
       prev.map((order) =>
@@ -188,10 +188,28 @@ export default function AdminDashboard() {
     console.log(`Order ${orderId} status changed to: ${newStatus}`);
   };
 
-  // Handle baking completion
-  const handleBakingComplete = (cookieName: string) => {
-    console.log(`Completed baking: ${cookieName}`);
-    // In real app, you might want to save this to database or trigger notifications
+  // Handle "Bake All" - move all pending orders to baking status
+  const handleBakeAllOrders = () => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.status === "pending"
+          ? {
+              ...order,
+              status: "baking" as OrderStatus,
+              statusHistory: [
+                ...(order.statusHistory || []),
+                {
+                  status: "baking" as OrderStatus,
+                  timestamp: new Date(),
+                  updatedBy: "admin-bulk-action",
+                },
+              ],
+            }
+          : order
+      )
+    );
+
+    console.log("All pending orders moved to baking status");
   };
 
   // Handle order viewing
@@ -512,17 +530,14 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Baking Queue Section */}
-        <BakingQueueSection
-          orders={orders}
-          onOrderStatusChange={handleOrderStatusChange}
-          onBakingComplete={handleBakingComplete}
-        />
+        {/* Baking Summary Section (Read-only) */}
+        <BakingSummarySection orders={orders} />
 
-        {/* Enhanced Orders Table */}
-        <EnhancedOrdersTable
+        {/* Enhanced Orders Table with Bake All Button */}
+        <EnhancedOrdersTableUpdated
           orders={orders}
           onOrderStatusChange={handleOrderStatusChange}
+          onBakeAllOrders={handleBakeAllOrders}
           onViewOrder={handleViewOrder}
         />
 

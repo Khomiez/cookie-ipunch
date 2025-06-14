@@ -1,26 +1,29 @@
-// components/admin/EnhancedOrdersTable.tsx
+// components/admin/EnhancedOrdersTableUpdated.tsx
 "use client";
 
 import React, { useState } from "react";
-import { Eye, Filter } from "lucide-react";
+import { Eye, Filter, ChefHat, Zap } from "lucide-react";
 import { Order, OrderStatus } from "@/types/order";
 import OrderStatusBadge from "./OrderStatusBadge";
 import OrderStatusControls from "./OrderStatusControls";
 
-interface EnhancedOrdersTableProps {
+interface EnhancedOrdersTableUpdatedProps {
   orders: Order[];
   onOrderStatusChange: (orderId: string, newStatus: OrderStatus) => void;
+  onBakeAllOrders: () => void;
   onViewOrder?: (orderId: string) => void;
 }
 
-const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
+const EnhancedOrdersTableUpdated: React.FC<EnhancedOrdersTableUpdatedProps> = ({
   orders,
   onOrderStatusChange,
+  onBakeAllOrders,
   onViewOrder,
 }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "status" | "total">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [isProcessingBakeAll, setIsProcessingBakeAll] = useState(false);
 
   // Filter orders based on selected status
   const filteredOrders =
@@ -56,7 +59,6 @@ const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
   });
 
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
-    // Add status history tracking here if needed
     onOrderStatusChange(orderId, newStatus);
   };
 
@@ -68,18 +70,39 @@ const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
     }
   };
 
+  const handleBakeAll = async () => {
+    const pendingOrders = orders.filter((order) => order.status === "pending");
+    
+    if (pendingOrders.length === 0) {
+      return;
+    }
+
+    setIsProcessingBakeAll(true);
+    
+    try {
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      onBakeAllOrders();
+    } finally {
+      setIsProcessingBakeAll(false);
+    }
+  };
+
   // Get status counts for filter badges
   const statusCounts = orders.reduce((acc, order) => {
     acc[order.status] = (acc[order.status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
+  const pendingOrdersCount = statusCounts["pending"] || 0;
+
   return (
     <div
       className="rounded-2xl shadow-sm border border-white/50 overflow-hidden"
       style={{ backgroundColor: "rgba(255, 255, 255, 0.9)" }}
     >
-      {/* Header with Filters */}
+      {/* Header with Filters and Bake All Button */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h3
@@ -90,6 +113,29 @@ const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
           </h3>
 
           <div className="flex items-center space-x-3">
+            {/* Bake All Button */}
+            {pendingOrdersCount > 0 && (
+              <button
+                onClick={handleBakeAll}
+                disabled={isProcessingBakeAll}
+                className="flex items-center space-x-2 px-4 py-2 rounded-xl text-white font-medium comic-text hover:scale-105 transition-transform disabled:opacity-50 disabled:transform-none shadow-md"
+                style={{ backgroundColor: "#7f6957" }}
+                title={`Start baking all ${pendingOrdersCount} pending orders`}
+              >
+                {isProcessingBakeAll ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap size={16} />
+                    <span>Bake All ({pendingOrdersCount})</span>
+                  </>
+                )}
+              </button>
+            )}
+
             {/* Sort Controls */}
             <select
               value={`${sortBy}-${sortOrder}`}
@@ -114,6 +160,32 @@ const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
             </select>
           </div>
         </div>
+
+        {/* Bake All Info Banner */}
+        {pendingOrdersCount > 0 && (
+          <div
+            className="p-3 rounded-xl mb-4 border-2 border-dashed"
+            style={{ borderColor: "#7f6957", backgroundColor: "#eaf7ff" }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <ChefHat size={16} style={{ color: "#7f6957" }} />
+                <span
+                  className="text-sm font-medium comic-text"
+                  style={{ color: "#7f6957" }}
+                >
+                  {pendingOrdersCount} order{pendingOrdersCount !== 1 ? "s" : ""} ready to start baking
+                </span>
+              </div>
+              <span
+                className="text-xs opacity-75 comic-text"
+                style={{ color: "#7f6957" }}
+              >
+                Click "Bake All" to move all pending orders to baking status
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Status Filter Tabs */}
         <div className="flex flex-wrap items-center gap-2">
@@ -357,6 +429,11 @@ const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
             <div className="text-sm comic-text" style={{ color: "#7f6957" }}>
               Showing {sortedOrders.length} of {orders.length} orders
               {selectedStatus !== "all" && ` with "${selectedStatus}" status`}
+              {pendingOrdersCount > 0 && (
+                <span className="ml-4 font-medium">
+                  • {pendingOrdersCount} pending order{pendingOrdersCount !== 1 ? "s" : ""} ready for baking
+                </span>
+              )}
             </div>
 
             <div
@@ -390,4 +467,4 @@ const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
   );
 };
 
-export default EnhancedOrdersTable;
+export default EnhancedOrdersTableUpdated;
