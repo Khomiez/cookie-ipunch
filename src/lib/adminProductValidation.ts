@@ -1,8 +1,36 @@
 // src/lib/adminProductValidation.ts
 import { z } from "zod";
 
-// Validation schemas
-export const productCreateSchema = z.object({
+// Types
+export interface ValidationResult<T> {
+  success: boolean;
+  data: T | null;
+  errors: Array<{ field: string; message: string }> | null;
+}
+
+export interface ProductData {
+  name?: string;
+  description?: string;
+  price?: number;
+  images?: string[];
+  tag?: string;
+  category?: string;
+  active?: boolean;
+}
+
+// Constants
+const VALID_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif"] as const;
+const VALID_IMAGE_DOMAINS = [
+  "images.unsplash.com",
+  "cdn.shopify.com",
+  "imgur.com",
+  "cloudinary.com",
+  "amazonaws.com",
+  "googleusercontent.com",
+] as const;
+
+// Base validation schemas
+const baseProductSchema = {
   name: z
     .string()
     .min(1, "Product name is required")
@@ -37,8 +65,10 @@ export const productCreateSchema = z.object({
     .max(50, "Category must be less than 50 characters"),
 
   active: z.boolean().optional(),
-});
+};
 
+// Validation schemas
+export const productCreateSchema = z.object(baseProductSchema);
 export const productUpdateSchema = productCreateSchema.partial();
 
 export const bulkOperationSchema = z.object({
@@ -54,8 +84,38 @@ export const bulkOperationSchema = z.object({
     .optional(),
 });
 
+// Helper functions
+const isValidImageUrl = (url: string): boolean => {
+  try {
+    const urlObj = new URL(url);
+    const hasValidExtension = VALID_IMAGE_EXTENSIONS.some((ext) =>
+      urlObj.pathname.toLowerCase().endsWith(ext)
+    );
+
+    const hasValidDomain =
+      VALID_IMAGE_DOMAINS.some((domain) => urlObj.hostname.includes(domain)) ||
+      hasValidExtension;
+
+    return hasValidDomain;
+  } catch {
+    return false;
+  }
+};
+
+const handleZodError = (error: z.ZodError): ValidationResult<any> => ({
+  success: false,
+  data: null,
+  errors: error.errors.map((err) => ({
+    field: err.path.join("."),
+    message: err.message,
+  })),
+});
+
 // Validation functions
-export const validateProductData = (data: any, isUpdate = false) => {
+export const validateProductData = (
+  data: ProductData,
+  isUpdate = false
+): ValidationResult<ProductData> => {
   try {
     const schema = isUpdate ? productUpdateSchema : productCreateSchema;
     return {
@@ -65,14 +125,7 @@ export const validateProductData = (data: any, isUpdate = false) => {
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return {
-        success: false,
-        data: null,
-        errors: error.errors.map((err) => ({
-          field: err.path.join("."),
-          message: err.message,
-        })),
-      };
+      return handleZodError(error);
     }
     return {
       success: false,
@@ -82,7 +135,9 @@ export const validateProductData = (data: any, isUpdate = false) => {
   }
 };
 
-export const validateBulkOperation = (data: any) => {
+export const validateBulkOperation = (
+  data: unknown
+): ValidationResult<z.infer<typeof bulkOperationSchema>> => {
   try {
     return {
       success: true,
@@ -91,14 +146,7 @@ export const validateBulkOperation = (data: any) => {
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return {
-        success: false,
-        data: null,
-        errors: error.errors.map((err) => ({
-          field: err.path.join("."),
-          message: err.message,
-        })),
-      };
+      return handleZodError(error);
     }
     return {
       success: false,
@@ -110,31 +158,21 @@ export const validateBulkOperation = (data: any) => {
 
 // Business logic validations
 export const validateProductBusiness = async (
-  data: any,
+  data: ProductData,
   existingProductId?: string
-) => {
+): Promise<ValidationResult<ProductData>> => {
   const errors: Array<{ field: string; message: string }> = [];
 
-  // Check for duplicate names (you'd implement this with your database)
-  // This is a placeholder - implement actual duplicate checking
-  if (data.name) {
-    // const duplicate = await checkProductNameDuplicate(data.name, existingProductId);
-    // if (duplicate) {
-    //   errors.push({ field: 'name', message: 'A product with this name already exists' });
-    // }
-  }
-
   // Validate image URLs if provided
-  if (data.images && Array.isArray(data.images)) {
-    for (let i = 0; i < data.images.length; i++) {
-      const imageUrl = data.images[i];
-      if (imageUrl && !isValidImageUrl(imageUrl)) {
+  if (data.images?.length) {
+    data.images.forEach((imageUrl, index) => {
+      if (!isValidImageUrl(imageUrl)) {
         errors.push({
-          field: `images.${i}`,
+          field: `images.${index}`,
           message: "Invalid image URL or unsupported format",
         });
       }
-    }
+    });
   }
 
   // Validate price logic
@@ -147,7 +185,6 @@ export const validateProductBusiness = async (
     }
 
     if (data.price > 1000 && !data.tag?.includes("Premium")) {
-      // Warning for high prices without premium tag
       errors.push({
         field: "price",
         message: 'Consider adding "Premium" tag for products over 1000 THB',
@@ -157,99 +194,53 @@ export const validateProductBusiness = async (
 
   return {
     success: errors.length === 0,
+    data: errors.length === 0 ? data : null,
     errors: errors.length > 0 ? errors : null,
   };
 };
 
-// Helper functions
-const isValidImageUrl = (url: string): boolean => {
-  try {
-    const urlObj = new URL(url);
-    const validExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
-    const hasValidExtension = validExtensions.some((ext) =>
-      urlObj.pathname.toLowerCase().endsWith(ext)
-    );
-
-    // Allow common image hosting domains
-    const validDomains = [
-      "images.unsplash.com",
-      "cdn.shopify.com",
-      "imgur.com",
-      "cloudinary.com",
-      "amazonaws.com",
-      "googleusercontent.com",
-    ];
-
-    const hasValidDomain =
-      validDomains.some((domain) => urlObj.hostname.includes(domain)) ||
-      hasValidExtension;
-
-    return hasValidDomain;
-  } catch {
-    return false;
-  }
-};
-
 // Product sanitization
-export const sanitizeProductData = (data: any) => {
-  return {
-    ...data,
-    name: data.name?.trim(),
-    description: data.description?.trim(),
-    tag: data.tag?.trim() || undefined,
-    category: data.category?.trim() || "cookies",
-    images: data.images?.filter((url: string) => url && url.trim()) || [],
-    price: data.price ? Math.round(data.price * 100) / 100 : undefined, // Round to 2 decimal places
-  };
-};
+export const sanitizeProductData = (data: ProductData): ProductData => ({
+  ...data,
+  name: data.name?.trim(),
+  description: data.description?.trim(),
+  tag: data.tag?.trim() || undefined,
+  category: data.category?.trim() || "cookies",
+});
 
-// Error formatting
+// Utility functions
 export const formatValidationErrors = (
   errors: Array<{ field: string; message: string }>
-) => {
-  const formatted: { [key: string]: string } = {};
-  errors.forEach((error) => {
-    formatted[error.field] = error.message;
-  });
-  return formatted;
+): string => {
+  return errors.map((err) => `${err.field}: ${err.message}`).join("\n");
 };
 
-// Product status validation
 export const canToggleProductStatus = (
-  product: any
+  product: ProductData
 ): { allowed: boolean; reason?: string } => {
-  // Check if product is used in pending orders
-  // This would typically check your database
-
-  if (!product.active && product.inventory?.stock === 0) {
+  if (!product.active && product.price && product.price > 1000) {
     return {
       allowed: false,
-      reason: "Cannot activate product with zero stock",
+      reason: "Premium products (over 1000 THB) cannot be deactivated",
     };
   }
-
   return { allowed: true };
 };
 
-// Bulk operation validation
 export const canPerformBulkOperation = (
   action: string,
-  products: any[]
+  products: ProductData[]
 ): { allowed: boolean; reason?: string } => {
-  if (products.length === 0) {
-    return { allowed: false, reason: "No products selected" };
-  }
-
-  if (action === "delete") {
-    // Check if any product has pending orders
-    const hasActiveOrders = products.some((p) => p.hasActiveOrders);
-    if (hasActiveOrders) {
+  if (action === "deactivate") {
+    const hasPremiumProducts = products.some(
+      (p) => p.price && p.price > 1000
+    );
+    if (hasPremiumProducts) {
       return {
         allowed: false,
-        reason: "Cannot delete products with active orders",
+        reason: "Cannot deactivate premium products in bulk",
       };
     }
   }
-
   return { allowed: true };
 };

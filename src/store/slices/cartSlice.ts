@@ -13,6 +13,8 @@ interface CartState {
   isHydrated: boolean;
 }
 
+const CART_STORAGE_KEY = 'fatsprinkle_cart';
+
 const initialState: CartState = {
   items: [],
   totalItems: 0,
@@ -20,10 +22,10 @@ const initialState: CartState = {
   isHydrated: false,
 };
 
-// Load cart from localStorage
+// Utility functions
 const loadCartFromStorage = (): CartState => {
   try {
-    const savedCart = localStorage.getItem('fatsprinkle_cart');
+    const savedCart = localStorage.getItem(CART_STORAGE_KEY);
     if (savedCart) {
       const parsedCart = JSON.parse(savedCart);
       return {
@@ -37,30 +39,35 @@ const loadCartFromStorage = (): CartState => {
   return initialState;
 };
 
-// Save cart to localStorage
-const saveCartToStorage = (state: CartState) => {
+const saveCartToStorage = (state: CartState): void => {
   try {
-    // Don't save the isHydrated flag to localStorage
     const { isHydrated, ...cartToSave } = state;
-    localStorage.setItem('fatsprinkle_cart', JSON.stringify(cartToSave));
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartToSave));
   } catch (error) {
     console.error('Error saving cart to localStorage:', error);
   }
 };
 
-// Calculate totals - price is now in Baht
 const calculateTotals = (items: CartItem[]): { totalItems: number; totalPrice: number } => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  // Price is now stored in Baht directly
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  return { totalItems, totalPrice: Math.round(totalPrice * 100) / 100 }; // Round to 2 decimal places
+  return { 
+    totalItems, 
+    totalPrice: Math.round(totalPrice * 100) / 100 // Round to 2 decimal places
+  };
+};
+
+const updateCartState = (state: CartState): void => {
+  const totals = calculateTotals(state.items);
+  state.totalItems = totals.totalItems;
+  state.totalPrice = totals.totalPrice;
+  saveCartToStorage(state);
 };
 
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    // Initialize cart from localStorage (called after hydration)
     initializeCart: (state) => {
       const savedState = loadCartFromStorage();
       state.items = savedState.items;
@@ -78,11 +85,7 @@ const cartSlice = createSlice({
         state.items.push({ ...action.payload, quantity: 1 });
       }
       
-      const totals = calculateTotals(state.items);
-      state.totalItems = totals.totalItems;
-      state.totalPrice = totals.totalPrice;
-      
-      saveCartToStorage(state);
+      updateCartState(state);
     },
     
     removeFromCart: (state, action: PayloadAction<string>) => {
@@ -96,11 +99,7 @@ const cartSlice = createSlice({
         }
       }
       
-      const totals = calculateTotals(state.items);
-      state.totalItems = totals.totalItems;
-      state.totalPrice = totals.totalPrice;
-      
-      saveCartToStorage(state);
+      updateCartState(state);
     },
     
     updateQuantity: (state, action: PayloadAction<{ id: string; quantity: number }>) => {
@@ -115,18 +114,13 @@ const cartSlice = createSlice({
         }
       }
       
-      const totals = calculateTotals(state.items);
-      state.totalItems = totals.totalItems;
-      state.totalPrice = totals.totalPrice;
-      
-      saveCartToStorage(state);
+      updateCartState(state);
     },
     
     clearCart: (state) => {
       state.items = [];
       state.totalItems = 0;
       state.totalPrice = 0;
-      
       saveCartToStorage(state);
     },
   },
@@ -140,10 +134,10 @@ export const {
   clearCart 
 } = cartSlice.actions;
 
-// Selector to get item quantity
+// Selectors
 export const getItemQuantity = (state: { cart: CartState }, productId: string): number => {
   const item = state.cart.items.find(item => item.id === productId);
-  return item ? item.quantity : 0;
+  return item?.quantity ?? 0;
 };
 
 export default cartSlice.reducer;
