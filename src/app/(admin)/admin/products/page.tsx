@@ -550,13 +550,13 @@ export default function AdminProductsPage() {
               </button>
               <div className="flex items-center space-x-3">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: "#eaf7ff" }}
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm"
+                  style={{ backgroundColor: "#7f6957" }}
                 >
-                  <Package size={20} style={{ color: "#7f6957" }} />
+                  <Package size={24} className="text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold comic-text" style={{ color: "#7f6957" }}>
+                  <h1 className="text-2xl font-bold comic-text" style={{ color: "#7f6957" }}>
                     Products
                   </h1>
                   <p className="text-sm opacity-75 comic-text" style={{ color: "#7f6957" }}>
@@ -595,7 +595,7 @@ export default function AdminProductsPage() {
         <div className="max-w-7xl mx-auto">
           {/* Filters and Bulk Actions */}
           <div 
-            className="rounded-2xl p-4 mb-6 shadow-sm border border-white/50"
+            className="rounded-2xl p-6 mb-6 shadow-sm border border-white/50"
             style={{ backgroundColor: "rgba(255, 255, 255, 0.9)" }}
           >
             <div className="flex flex-col lg:flex-row gap-4">
@@ -687,7 +687,7 @@ export default function AdminProductsPage() {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl p-4 shadow-sm animate-pulse">
+                <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-white/50 animate-pulse">
                   <div className="w-full h-48 bg-gray-200 rounded-xl mb-4"></div>
                   <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-200 rounded w-1/2"></div>
@@ -721,7 +721,7 @@ export default function AdminProductsPage() {
                 {products.map((product) => (
                   <div 
                     key={product.id}
-                    className="bg-white rounded-2xl p-4 shadow-sm border border-white/50 hover:shadow-md transition-all"
+                    className="group rounded-2xl p-6 shadow-sm border border-white/50 hover:shadow-md transition-all"
                     style={{ backgroundColor: "rgba(255, 255, 255, 0.9)" }}
                   >
                     {/* Selection Checkbox */}
@@ -748,7 +748,7 @@ export default function AdminProductsPage() {
                     {/* Product Image */}
                     <div className="relative mb-4">
                       <div 
-                        className="w-full h-48 rounded-xl overflow-hidden"
+                        className="w-full h-48 rounded-xl overflow-hidden group-hover:scale-[1.02] transition-transform"
                         style={{ backgroundColor: "#fefbdc" }}
                       >
                         {product.image && product.image !== '/api/placeholder/300/300' ? (
@@ -801,8 +801,8 @@ export default function AdminProductsPage() {
                         onClick={() => toggleProductStatus(product)}
                         className={`flex-1 py-2 rounded-xl font-medium text-sm comic-text flex items-center justify-center space-x-1 ${
                           product.active 
-                            ? 'border-2 border-dashed border-orange-400 text-orange-600' 
-                            : 'border-2 border-dashed border-green-400 text-green-600'
+                            ? 'border-2 border-dashed border-orange-400 text-orange-600 hover:bg-orange-50' 
+                            : 'border-2 border-dashed border-green-400 text-green-600 hover:bg-green-50'
                         }`}
                       >
                         {product.active ? <PowerOff size={14} /> : <Power size={14} />}
@@ -811,7 +811,7 @@ export default function AdminProductsPage() {
                       
                       <button
                         onClick={() => openEditModal(product)}
-                        className="px-4 py-2 rounded-xl text-white font-medium comic-text"
+                        className="px-4 py-2 rounded-xl text-white font-medium comic-text hover:scale-105 transition-transform"
                         style={{ backgroundColor: "#7f6957" }}
                       >
                         <Edit3 size={14} />
@@ -819,7 +819,7 @@ export default function AdminProductsPage() {
                       
                       <button
                         onClick={() => openDeleteModal(product)}
-                        className="px-4 py-2 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600"
+                        className="px-4 py-2 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600 hover:scale-105 transition-transform"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -831,7 +831,7 @@ export default function AdminProductsPage() {
               {/* Pagination */}
               {pagination && pagination.totalPages > 1 && (
                 <div 
-                  className="flex items-center justify-between p-4 rounded-2xl shadow-sm border border-white/50"
+                  className="flex items-center justify-between p-6 rounded-2xl shadow-sm border border-white/50"
                   style={{ backgroundColor: "rgba(255, 255, 255, 0.9)" }}
                 >
                   <div className="text-sm comic-text" style={{ color: "#7f6957" }}>
