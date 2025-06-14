@@ -2,11 +2,14 @@ import jwt from "jsonwebtoken";
 import { cookies, headers } from "next/headers";
 import Admin, { IAdmin } from "@/models/Admin";
 import connectToDatabase from "./mongodb";
+import { NextResponse } from "next/server";
 
 export interface AdminSession {
-  adminId: string;
+  id: string;
+  adminId: string; // MongoDB _id of the admin
   username: string;
-  role: string;
+  email: string;
+  role: "super_admin" | "admin" | "manager";
   permissions: {
     products: boolean;
     orders: boolean;
@@ -56,17 +59,34 @@ export async function getAdminSession(): Promise<AdminSession | null> {
 }
 
 export async function requireAdminAuth(): Promise<AdminSession> {
-  const session = await getAdminSession();
-  if (!session) {
+  const cookieStore = await cookies();
+  const adminSession = cookieStore.get("fatsprinkle_admin_session");
+
+  if (!adminSession?.value) {
     throw new Error("Unauthorized");
   }
-  return session;
+
+  try {
+    const decoded = jwt.verify(
+      adminSession.value,
+      process.env.JWT_SECRET || "fallback-secret-key"
+    ) as AdminSession;
+
+    // Verify admin still exists and is active
+    await connectToDatabase();
+    const admin = await Admin.findById(decoded.adminId).lean() as (IAdmin & { _id: string }) | null;
+
+    if (!admin || !admin.isActive) {
+      throw new Error("Unauthorized");
+    }
+
+    return decoded;
+  } catch (error) {
+    throw new Error("Invalid session");
+  }
 }
 
-export function hasPermission(
-  session: AdminSession,
-  permission: keyof AdminSession["permissions"]
-): boolean {
+export function hasPermission(session: AdminSession, permission: keyof AdminSession["permissions"]): boolean {
   return session.role === "super_admin" || session.permissions[permission];
 }
 
@@ -154,4 +174,22 @@ export function checkAdminRateLimit(
     remaining: maxAttempts - current.count,
     resetTime: current.resetTime,
   };
+}
+
+export function handleAdminError(error: unknown) {
+  console.error("Admin API error:", error);
+
+  if (error instanceof Error) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (error.message === "Invalid session") {
+      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+    }
+  }
+
+  return NextResponse.json(
+    { error: "Internal server error" },
+    { status: 500 }
+  );
 }
