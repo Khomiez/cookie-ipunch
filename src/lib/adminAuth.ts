@@ -67,9 +67,13 @@ export async function requireAdminAuth(): Promise<AdminSession> {
   }
 
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET environment variable is not set");
+    }
+
     const decoded = jwt.verify(
       adminSession.value,
-      process.env.JWT_SECRET || "fallback-secret-key"
+      process.env.JWT_SECRET
     ) as AdminSession;
 
     // Verify admin still exists and is active

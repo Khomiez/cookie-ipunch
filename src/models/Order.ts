@@ -1,4 +1,4 @@
-// src/models/Order.ts
+// src/models/Order.ts - Enhanced with admin dashboard support
 import mongoose, { Schema, Document } from "mongoose";
 
 // Order Item Interface
@@ -29,6 +29,14 @@ export interface ICustomerDetails {
   };
 }
 
+// Status History Interface for tracking changes
+export interface IStatusHistory {
+  status: "pending" | "confirmed" | "preparing" | "ready" | "out_for_delivery" | "delivered" | "cancelled";
+  timestamp: Date;
+  updatedBy?: string; // Admin ID or system
+  notes?: string;
+}
+
 // Order Interface
 export interface IOrder extends Document {
   orderId: string; // Human-readable order ID (e.g., "FS240601001")
@@ -49,16 +57,19 @@ export interface IOrder extends Document {
   deliveryDate?: Date;
   deliveryTimeSlot?: string;
 
-  // Order Status
+  // Order Status - Updated for admin dashboard
   status:
     | "pending"
-    | "confirmed"
+    | "confirmed" 
     | "preparing"
     | "ready"
     | "out_for_delivery"
     | "delivered"
     | "cancelled";
   paymentStatus: "pending" | "paid" | "failed" | "refunded";
+
+  // Status tracking for admin dashboard
+  statusHistory: IStatusHistory[];
 
   // Timestamps
   createdAt: Date;
@@ -71,6 +82,12 @@ export interface IOrder extends Document {
   // Metadata
   source: string; // e.g., 'fatsprinkle_website'
   orderType: string; // e.g., 'pre_order'
+
+  // Methods for admin dashboard
+  canAdvanceStatus(): boolean;
+  canRevertStatus(): boolean;
+  getNextStatus(): string | null;
+  getPreviousStatus(): string | null;
 }
 
 // Order Schema
@@ -100,7 +117,7 @@ const OrderSchema: Schema = new Schema(
         type: String,
         required: true,
         lowercase: true,
-        index: true, // Important for email-based lookup
+        index: true,
       },
       phone: { type: String, required: true },
       address: {
@@ -148,7 +165,7 @@ const OrderSchema: Schema = new Schema(
       enum: [
         "pending",
         "confirmed",
-        "preparing",
+        "preparing", 
         "ready",
         "out_for_delivery",
         "delivered",
@@ -163,6 +180,28 @@ const OrderSchema: Schema = new Schema(
       default: "pending",
       index: true,
     },
+
+    // Status History for admin tracking
+    statusHistory: [
+      {
+        status: {
+          type: String,
+          enum: [
+            "pending",
+            "confirmed",
+            "preparing",
+            "ready", 
+            "out_for_delivery",
+            "delivered",
+            "cancelled",
+          ],
+          required: true,
+        },
+        timestamp: { type: Date, default: Date.now },
+        updatedBy: String,
+        notes: String,
+      },
+    ],
 
     // Notes
     customerNotes: String,
@@ -179,15 +218,62 @@ const OrderSchema: Schema = new Schema(
     },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt
+    timestamps: true,
   }
 );
+
+// Method to check if status can be advanced
+OrderSchema.methods.canAdvanceStatus = function(): boolean {
+  const statusFlow = ["pending", "confirmed", "preparing", "ready", "out_for_delivery", "delivered"];
+  const currentIndex = statusFlow.indexOf(this.status);
+  return currentIndex >= 0 && currentIndex < statusFlow.length - 1 && this.status !== "cancelled";
+};
+
+// Method to check if status can be reverted
+OrderSchema.methods.canRevertStatus = function(): boolean {
+  const statusFlow = ["pending", "confirmed", "preparing", "ready", "out_for_delivery", "delivered"];
+  const currentIndex = statusFlow.indexOf(this.status);
+  return currentIndex > 0 && this.status !== "cancelled";
+};
+
+// Method to get next status
+OrderSchema.methods.getNextStatus = function(): string | null {
+  const statusFlow = ["pending", "confirmed", "preparing", "ready", "out_for_delivery", "delivered"];
+  const currentIndex = statusFlow.indexOf(this.status);
+  if (currentIndex >= 0 && currentIndex < statusFlow.length - 1 && this.status !== "cancelled") {
+    return statusFlow[currentIndex + 1];
+  }
+  return null;
+};
+
+// Method to get previous status
+OrderSchema.methods.getPreviousStatus = function(): string | null {
+  const statusFlow = ["pending", "confirmed", "preparing", "ready", "out_for_delivery", "delivered"];
+  const currentIndex = statusFlow.indexOf(this.status);
+  if (currentIndex > 0 && this.status !== "cancelled") {
+    return statusFlow[currentIndex - 1];
+  }
+  return null;
+};
 
 // Indexes for efficient queries
 OrderSchema.index({ "customerDetails.email": 1, createdAt: -1 });
 OrderSchema.index({ status: 1, createdAt: -1 });
 OrderSchema.index({ paymentStatus: 1 });
 OrderSchema.index({ deliveryDate: 1 });
+OrderSchema.index({ createdAt: -1 });
+
+// Auto-populate status history on status change
+OrderSchema.pre('save', function(next) {
+  if (this.isModified('status') && !this.isNew) {
+    this.statusHistory.push({
+      status: this.status,
+      timestamp: new Date(),
+      updatedBy: 'system', // This should be set by the calling code
+    });
+  }
+  next();
+});
 
 // Generate readable order ID
 OrderSchema.pre("save", async function (next) {
@@ -211,6 +297,16 @@ OrderSchema.pre("save", async function (next) {
 
     this.orderId = `FS${dateStr}${sequence.toString().padStart(3, "0")}`;
   }
+  
+  // Initialize status history if new order
+  if (this.isNew && this.statusHistory.length === 0) {
+    this.statusHistory.push({
+      status: this.status,
+      timestamp: new Date(),
+      updatedBy: 'system',
+    });
+  }
+  
   next();
 });
 

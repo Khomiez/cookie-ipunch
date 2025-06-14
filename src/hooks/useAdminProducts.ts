@@ -28,8 +28,8 @@ interface UseAdminProductsReturn {
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
-  createProduct: (data: any) => Promise<IProduct>;
-  updateProduct: (id: string, data: any) => Promise<IProduct>;
+  createProduct: (data: Partial<IProduct>) => Promise<IProduct>;
+  updateProduct: (id: string, data: Partial<IProduct>) => Promise<IProduct>;
   deleteProduct: (id: string) => Promise<void>;
   toggleProductStatus: (id: string, currentStatus: boolean) => Promise<void>;
   bulkOperation: (
@@ -92,7 +92,7 @@ export const useAdminProducts = (
 
   // Create product
   const createProduct = useCallback(
-    async (productData: any): Promise<IProduct> => {
+    async (productData: Partial<IProduct>): Promise<IProduct> => {
       try {
         const response = await fetch("/api/admin/products", {
           method: "POST",
@@ -120,7 +120,7 @@ export const useAdminProducts = (
 
   // Update product
   const updateProduct = useCallback(
-    async (productId: string, productData: any): Promise<IProduct> => {
+    async (productId: string, productData: Partial<IProduct>): Promise<IProduct> => {
       try {
         const response = await fetch(`/api/admin/products/${productId}`, {
           method: "PUT",

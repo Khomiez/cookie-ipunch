@@ -232,7 +232,7 @@ export default function PaymentFailedPage() {
           </div>
 
           {/* Helpful Tips */}
-          <div className="mt-8 text-left">
+          <div className="mt-6">
             <h4
               className="font-bold mb-2 comic-text"
               style={{ color: "#7f6957" }}
