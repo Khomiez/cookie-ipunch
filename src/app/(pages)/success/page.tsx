@@ -40,43 +40,116 @@ export default function SuccessPage() {
   useEffect(() => {
     if (!mounted) return;
 
-    // Confetti animation
-    const defaults = {
-      spread: 360,
-      ticks: 100,
-      gravity: 0,
-      decay: 0.91,
-      origin: { y: 0 },
-      startVelocity: 30,
+    // Enhanced falling confetti animation
+    const createFallingConfetti = () => {
+      if (!window.confetti) return;
+
+      // Main confetti burst from top
+      const duration = 1500;
+      const animationEnd = Date.now() + duration;
+
+      const randomInRange = (min: number, max: number) => {
+        return Math.random() * (max - min) + min;
+      };
+
+      const runAnimation = () => {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return;
+        }
+
+        // Create multiple small bursts across the top
+        const particleCount = 2 * (timeLeft / duration);
+
+        // Left side
+        window.confetti({
+          particleCount: Math.floor(particleCount / 3),
+          spread: 60,
+          origin: { x: randomInRange(0.1, 0.3), y: 0 },
+          colors: ["#faee73", "#eaf7ff", "#7f6957", "#ffffff"],
+          gravity: 0.6,
+          scalar: randomInRange(0.8, 1.2),
+          drift: randomInRange(-0.5, 0.5),
+          ticks: 200,
+          startVelocity: randomInRange(25, 35),
+          shapes: ["circle", "square"],
+        });
+
+        // Center
+        window.confetti({
+          particleCount: Math.floor(particleCount / 3),
+          spread: 70,
+          origin: { x: randomInRange(0.4, 0.6), y: 0 },
+          colors: ["#faee73", "#eaf7ff", "#7f6957", "#ffffff"],
+          gravity: 0.6,
+          scalar: randomInRange(0.8, 1.2),
+          drift: randomInRange(-0.5, 0.5),
+          ticks: 200,
+          startVelocity: randomInRange(25, 35),
+          shapes: ["circle", "square"],
+        });
+
+        // Right side
+        window.confetti({
+          particleCount: Math.floor(particleCount / 3),
+          spread: 60,
+          origin: { x: randomInRange(0.7, 0.9), y: 0 },
+          colors: ["#faee73", "#eaf7ff", "#7f6957", "#ffffff"],
+          gravity: 0.6,
+          scalar: randomInRange(0.8, 1.2),
+          drift: randomInRange(-0.5, 0.5),
+          ticks: 200,
+          startVelocity: randomInRange(25, 35),
+          shapes: ["circle", "square"],
+        });
+
+        // Cookie emojis falling
+        if (Math.random() < 0.3) {
+          window.confetti({
+            particleCount: 2,
+            spread: 30,
+            origin: { x: randomInRange(0.2, 0.8), y: 0 },
+            gravity: 0.5,
+            scalar: 1.5,
+            drift: randomInRange(-0.3, 0.3),
+            ticks: 250,
+            startVelocity: randomInRange(15, 25),
+            shapes: ["emoji"],
+            shapeOptions: {
+              emoji: {
+                value: ["🍪", "✨", "🎉"],
+              },
+            },
+          });
+        }
+
+        requestAnimationFrame(runAnimation);
+      };
+
+      runAnimation();
     };
 
-    function shoot() {
+    // Initial big burst
+    setTimeout(() => {
       if (window.confetti) {
         window.confetti({
-          ...defaults,
-          particleCount: 30,
+          particleCount: 100,
+          spread: 160,
+          origin: { y: 0 },
+          colors: ["#faee73", "#eaf7ff", "#7f6957", "#ffffff"],
+          gravity: 0.8,
           scalar: 1,
+          ticks: 300,
+          startVelocity: 40,
           shapes: ["circle", "square"],
-          colors: ["#faee73", "#eaf7ff", "#7f6957"],
-        });
-
-        window.confetti({
-          ...defaults,
-          particleCount: 10,
-          scalar: 2,
-          shapes: ["emoji"],
-          shapeOptions: {
-            emoji: {
-              value: ["🍪"],
-            },
-          },
         });
       }
-    }
+    }, 200);
 
-    setTimeout(shoot, 0);
-    setTimeout(shoot, 100);
-    setTimeout(shoot, 200);
+    // Start continuous falling effect
+    setTimeout(createFallingConfetti, 500);
+
   }, [mounted]);
 
   const handleBackClick = () => {
